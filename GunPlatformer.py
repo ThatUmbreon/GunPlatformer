@@ -54,6 +54,12 @@ hold = False
 bullets = 6
 magazine_size= 6
 
+#creator mode variables
+creator_mode = True
+custom_rects = []
+variable67 = (0,0)
+variable69 = (0,0)
+
 platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100)] # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
 
 # clock for delta time
@@ -153,6 +159,7 @@ while running:
     #draws bullets
     for bullet in bullet_list:
         pygame.draw.circle(screen, "yellow", bullet[0], 5)
+
 
     #draws player
     pygame.draw.rect(screen,(67,255,255),(playerx-PLAYER_WIDTH//2,playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT))
