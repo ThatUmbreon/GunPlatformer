@@ -134,6 +134,7 @@ while running:
         horizontal_blocked = False
         vertical_blocked = False
         for platform in platforms:
+            #could you please provide docs on how to make ts work with new platforms, like how do i add a platform that has collision.
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 horizontal_blocked = True
             if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
@@ -191,4 +192,5 @@ while running:
     pygame.display.flip()
 
 # close the game when we close it
+
 pygame.quit()
