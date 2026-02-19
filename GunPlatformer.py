@@ -28,7 +28,7 @@ pygame.init()
 # screen
 WIDTH = 1200
 HEIGHT = 800
-screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE)
+screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|pygame.FULLSCREEN)
 pygame.display.set_caption("GunPlatformer")
 
 # player variables
@@ -60,7 +60,8 @@ custom_rects = []
 variable67 = (0,0)
 variable69 = (0,0)
 
-platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100)] # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
+ # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
+platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100),pygame.Rect(WIDTH//2-100,HEIGHT-300,200,30)]
 
 # clock for delta time
 clock = pygame.time.Clock()
@@ -73,13 +74,15 @@ while running:
     # delta time :)
     dt = clock.tick(fpsCap)/1000*(fpsCap if fpsCap > 0 else 1)
     
-    # KILL
+    # KILL or fullscreen
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running=False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running=False
+            if event.key == pygame.K_F11:
+                pygame.display.toggle_fullscreen()
     
     # get inputs
     keys = pygame.key.get_pressed()
@@ -100,7 +103,7 @@ while running:
     for bullet in bullet_list:
         bullet[0][0] += bullet[1][0] * dt
         bullet[0][1] += bullet[1][1] * dt
-        if bullet[0][0] < 0 or bullet[0][0] > WIDTH or bullet[0][1] < 0 or bullet[0][1] > HEIGHT:
+        if bullet[0][0] < 0 or bullet[0][0] > WIDTH or bullet[0][1] < 0 or bullet[0][1] > HEIGHT or any(pygame.Rect(bullet[0][0]-5, bullet[0][1]-5, 10, 10).colliderect(platform) for platform in platforms):
             bullet_list.remove(bullet)
 
     # applies drag/friction
