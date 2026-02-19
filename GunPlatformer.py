@@ -156,6 +156,24 @@ while running:
     for platform in platforms:
         pygame.draw.rect(screen, "brown", platform)
 
+        # levil maker! doesnt work btw, idk y
+    if creator_mode:
+        if running:
+
+            for event in pygame.event.get():
+                print("yay!")
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_a:
+                        variable67 = pygame.mouse.get_pos()
+                        print(variable67)
+                    else:
+                        variable69 = pygame.mouse.get_pos()
+                        custom_rects.append(pygame.Rect(variable67, variable69 - variable67))
+        try:
+            pygame.draw.rect(screen, "black", custom_rects[0])
+        except:
+            pass
     #draws bullets
     for bullet in bullet_list:
         pygame.draw.circle(screen, "yellow", bullet[0], 5)
