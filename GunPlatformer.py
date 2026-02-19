@@ -10,9 +10,9 @@ def thatcircleshit(radius, center, point, addangle=0):
     '''what even is this shit.
     it calculates the point on the circumference of a circle with a given radius and center, that is in the direction of the point argument, with an optional angle added to it.
     like seriously what do you even call that'''
-    x = radius*cos(addangle+acos((point[0]-center[0])/(distance(center,point))))
-    y = radius*sin(addangle+asin((point[1]-center[1])/(distance(center,point))))
-    return x, y
+    playerx = radius*cos(addangle+acos((point[0]-center[0])/(distance(center,point))))
+    playery = radius*sin(addangle+asin((point[1]-center[1])/(distance(center,point))))
+    return playerx, playery
 
 def write(msg, pos, size, color):
     '''draw text on the screen, aligned topleft'''
@@ -54,7 +54,7 @@ hold = False
 bullets = 6
 magazine_size= 6
 
-platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100)] # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
+platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100)] # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
 
 # clock for delta time
 clock = pygame.time.Clock()
@@ -89,10 +89,6 @@ while running:
         player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx,playery), mouse_pos, pi)
         bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx,playery), mouse_pos)])
         bullets -= 1
-        
-    # moves player according to velocity
-    playerx += player_xvel * dt
-    playery += player_yvel * dt
 
     # moves bullets according to their velocity, and removes them if they go offscreen
     for bullet in bullet_list:
@@ -111,7 +107,7 @@ while running:
     player_yvel = min(player_yvel, TERMINAL_VELOCITY)
 
     # walking figured we would be able to walk, but only jump with recoil
-    playerx += ((keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])) * PLAYER_SPEED * dt
+    walk = ((keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])) * PLAYER_SPEED
 
     # player may not go offscreen
     if PLAYER_WIDTH//2 > playerx or playerx > WIDTH-PLAYER_WIDTH//2:
@@ -129,74 +125,30 @@ while running:
         horizontal_blocked = False
         vertical_blocked = False
         for platform in platforms:
-            if pygame.Rect((x+(hVel/4)+10)%820-20,y-10,20,20).colliderect(platform[1]):
+            if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 horizontal_blocked = True
-                wTyp = platform[0]
-            if pygame.Rect(x-10,y+(vVel/4)-10,20,20).colliderect(platform[1]):
+            if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 vertical_blocked = True
-                fTyp = platform[0]
-                if fTyp == 8:
-                    wSfc = wArr[cLvl].index(platform)
-            if pygame.Rect((x+(hVel/4)+10)%820-20,y+((vVel-gAcc)/4)-10,20,20).colliderect(platform[1]) and not (pygame.Rect((x+(hVel/4)+10)%820-20,y-10,20,20).colliderect(platform[1]) or pygame.Rect(x-10,y+(vVel/4)-10,20,20).colliderect(platform[1])):
+            if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery+((player_yvel+GRAVITY)*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) and not (pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) or pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform)):
                 horizontal_blocked = True
                 vertical_blocked = True
         if horizontal_blocked:
-            if wTyp == 6:
-                hVel *= -1.25
-                vVel -= 5
-                fDir *= -1
-            else:
-                hVel = 0
+            player_xvel = 0
+        else:
+            playerx += (player_xvel+walk)*dt/4
         if vertical_blocked:
-            if vVel > 0:
-                jmps = 0
-                cTme = 0
-                wJmp = False
-            if fTyp == 6 and (vVel > 1 or vVel < 0):
-                vVel *= -0.95
-            else:
-                vVel = 0
-            if wTyp == 6:
-                hVel *= -1.25
-                vVel -= 5
-                fDir *= -1
-            else:
-                hVel = 0
+            if player_yvel > 0:
+                bullets = magazine_size
+            player_yvel = 0
         else:
-            if hVel != 0:
-                wTyp = -1
-            x = (x+(hVel/4)+10)%820-10
-            sCdn += 1
-            if sCdn >= 20:
-                if fTyp == 5 and hVel != 0:
-                    aSFX.play()
-                elif hAcc != 0:
-                    sSFX.play()
-                sCdn = 0
-        if vBlk:
-            if vVel > 0:
-                jmps = 0
-                cTme = 0
-                wJmp = False
-            if fTyp == 6 and (vVel > 1 or vVel < 0):
-                vVel *= -0.95
-            else:
-                vVel = 0
-            hVel *= pSfc[fTyp]
-        else:
-            if vVel != 0 and cTme >= jPrd:
-                fTyp = -1
-            y = y+(vVel/4)
-            if wTyp == 5 and hVel == 0 and sCdn >= 19:
-                aSFX.play()
-            if cJmp == 1:
-                cTme += 1
+            playery += player_yvel*dt/4
         
     #background
     screen.fill((67,41,69))
 
     #draws FLOOR!! (we dont have platforms or anything so its just a floor)
-    pygame.draw.rect(screen, "brown", (0,HEIGHT-100+PLAYER_HEIGHT/2, WIDTH, HEIGHT))
+    for platform in platforms:
+        pygame.draw.rect(screen, "brown", platform)
 
     #draws bullets
     for bullet in bullet_list:
