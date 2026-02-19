@@ -158,22 +158,21 @@ while running:
 
         # levil maker! doesnt work btw, idk y
     if creator_mode:
-        if running:
-
-            for event in pygame.event.get():
-                print("yay!")
-                if event.type == pygame.KEYDOWN:
-
-                    if event.key == pygame.K_a:
-                        variable67 = pygame.mouse.get_pos()
-                        print(variable67)
-                    else:
-                        variable69 = pygame.mouse.get_pos()
-                        custom_rects.append(pygame.Rect(variable67, variable69 - variable67))
-        try:
-            pygame.draw.rect(screen, "black", custom_rects[0])
-        except:
-            pass
+        if variable67 != (0,0):
+            pygame.draw.circle(screen, "red", variable67, 10)
+        if variable69 != (0,0):
+            pygame.draw.circle(screen, "purple", variable69, 10)
+        if keys[pygame.K_q]:
+                variable67 = mouse_pos
+        elif keys[pygame.K_e]:
+            variable69 = (mouse_pos[0], mouse_pos[1])
+        elif keys[pygame.K_r] and variable67 != (0,0) and variable69 != (0,0):
+            custom_rects.append(pygame.Rect(variable67, variable69))
+        elif keys[pygame.K_p]:
+            variable67 = (0,0)
+            variable69 = (0,0)
+        for objects in custom_rects:
+            pygame.draw.rect(screen, "blue", (variable67[0],variable67[1],variable69[0]-variable67[0],variable69[1]-variable67[1]))
     #draws bullets
     for bullet in bullet_list:
         pygame.draw.circle(screen, "yellow", bullet[0], 5)
