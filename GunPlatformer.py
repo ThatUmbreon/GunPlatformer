@@ -22,6 +22,13 @@ def write(msg, pos, size, color):
     sRect.topleft = pos
     screen.blit(sSurf, sRect)
 
+def calc_rects(point1, point2):
+    left = min(point1[0], point2[0])
+    top = min(point1[1], point2[1])
+    rect_width = abs(point1[0] - point2[0])
+    rect_height = abs(point1[1] - point2[1])
+    new_platform = pygame.Rect(left, top, rect_width, rect_height)
+    return new_platform
 # initialize pygame (thats important)
 pygame.init()
 
@@ -59,6 +66,9 @@ creator_mode = True
 custom_rects = []
 variable67 = (0,0)
 variable69 = (0,0)
+undo = False
+redo = False
+removed_platform = []
 
  # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
 platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100),pygame.Rect(WIDTH//2-100,HEIGHT-300,200,30)]
@@ -78,12 +88,15 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running=False
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
                 running=False
-            if event.key == pygame.K_F11:
+            elif event.key == pygame.K_F11:
                 pygame.display.toggle_fullscreen()
-    
+            elif event.key == pygame.K_z and keys[pygame.K_LCTRL] and platforms != [] and not keys[pygame.K_LSHIFT]:
+                undo = True
+            elif event.key == pygame.K_z and keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and platforms != []:
+                redo = True
     # get inputs
     keys = pygame.key.get_pressed()
     mouse_pos = pygame.mouse.get_pos()
@@ -169,14 +182,28 @@ while running:
         if keys[pygame.K_q]:
                 variable67 = mouse_pos
         elif keys[pygame.K_e]:
-            variable69 = (mouse_pos[0], mouse_pos[1])
-        elif keys[pygame.K_r] and variable67 != (0,0) and variable69 != (0,0):
-            custom_rects.append(pygame.Rect(variable67, variable69))
-        elif keys[pygame.K_p]:
-            variable67 = (0,0)
-            variable69 = (0,0)
+            variable69 = mouse_pos
+        elif undo:
+            removed_platform.append(platforms.pop())
+            undo = False
+        try:
+            if redo and removed_platform:
+                platforms.append(removed_platform[-1])
+                removed_platform.remove(removed_platform[-1])
+                redo = False
+        except:
+            pass
+        if variable67 != (0,0) and variable69 != (0,0):
+            new_platform = calc_rects(variable67, variable69)
+            custom_rects.append(new_platform)
+            if keys[pygame.K_p]:
+                variable67 = (0,0)
+                variable69 = (0,0)
+                platforms.append(new_platform)
+                custom_rects = []
+
         for objects in custom_rects:
-            pygame.draw.rect(screen, "blue", (variable67[0],variable67[1],variable69[0]-variable67[0],variable69[1]-variable67[1]))
+            pygame.draw.rect(screen, "blue", new_platform)
     #draws bullets
     for bullet in bullet_list:
         pygame.draw.circle(screen, "yellow", bullet[0], 5)
