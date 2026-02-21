@@ -38,6 +38,11 @@ HEIGHT = 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|pygame.FULLSCREEN)
 pygame.display.set_caption("GunPlatformer")
 
+#world varbs
+WLW=10000
+WLH=1000
+world_surf = pygame.Surface((WLW, WLH))
+
 # player variables
 PLAYER_WIDTH = 20
 PLAYER_HEIGHT = 20
@@ -58,8 +63,8 @@ RECOIL = 20
 bullet_list = []
 shoot = False
 hold = False
-bullets = 6
-magazine_size= 6
+bullets = 6000
+magazine_size= 6000
 
 #creator mode variables
 creator_mode = True
@@ -70,9 +75,9 @@ undo = False
 redo = False
 removed_platform = []
 
-#cam shit
-camx = playerx - WIDTH/2
-camy = playery - HEIGHT/2
+#cam variables
+camx = 0
+camy = 0
 
  # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
 platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100),pygame.Rect(WIDTH//2-100,HEIGHT-300,200,30)]
@@ -101,6 +106,11 @@ while running:
                 undo = True
             elif event.key == pygame.K_z and keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and platforms != []:
                 redo = True
+            elif event.key == pygame.K_r:
+                playerx = WIDTH//2
+                playery = HEIGHT//2
+                player_xvel = 0
+                player_yvel = 0
     # get inputs
     keys = pygame.key.get_pressed()
     mouse_pos = pygame.mouse.get_pos()[0]+camx, pygame.mouse.get_pos()[1]+camy
@@ -115,15 +125,15 @@ while running:
     
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
-        player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx,playery), mouse_pos, pi)
-        bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx,playery), mouse_pos)])
+        player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
+        bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx-camx,playery-camy), mouse_pos)])
         bullets -= 1
 
     # moves bullets according to their velocity, and removes them if they go offscreen
     for bullet in bullet_list:
         bullet[0][0] += bullet[1][0] * dt
         bullet[0][1] += bullet[1][1] * dt
-        if any(pygame.Rect(bullet[0][0]-5, bullet[0][1]-5, 10, 10).colliderect(platform) for platform in platforms):
+        if bullet[0][0] < 0 or bullet[0][0] > WLW or bullet[0][1] < 0 or bullet[0][1] > WLH or any(pygame.Rect(bullet[0][0] - 5, bullet[0][1] - 5, 10, 10).colliderect(platform) for platform in platforms):
             bullet_list.remove(bullet)
 
     # applies drag/friction
@@ -165,25 +175,37 @@ while running:
             player_yvel = 0
         else:
             playery += player_yvel*dt/4
-        
+
+    if playerx<PLAYER_WIDTH//2:
+        playerx = PLAYER_WIDTH//2
+        player_xvel = 0
+    elif playerx>WLW-PLAYER_WIDTH//2:
+        playerx = WLW - PLAYER_WIDTH // 2
+        player_xvel = 0
+    if playery<PLAYER_HEIGHT//2:
+        playery = PLAYER_HEIGHT//2
+        player_yvel = 0
+    elif playery>WLH-PLAYER_HEIGHT//2:
+        playery = WLH - PLAYER_HEIGHT // 2
+        player_yvel = 0
     #background
-    screen.fill((67,41,69))
+    world_surf.fill((67, 41, 69))
+    screen.fill((41,41,41))
 
     #draws platfroms
     for platform in platforms:
-        platform = platform[0]-camx, platform[1]-camy, platform[2], platform[3]
-        pygame.draw.rect(screen, "brown", platform)
+        pygame.draw.rect(world_surf, "brown", platform)
 
         # levil maker!
     if creator_mode:
         if variable67 != (0,0):
-            pygame.draw.circle(screen, "red", (variable67[0]-camx, variable67[1]-camy), 10)
+            pygame.draw.circle(world_surf, "red", (variable67), 10)
         if variable69 != (0,0):
-            pygame.draw.circle(screen, "purple", (variable69[0]-camx, variable69[1]-camy), 10)
+            pygame.draw.circle(world_surf, "purple", (variable69), 10)
         if keys[pygame.K_q]:
-                variable67 = mouse_pos
+                variable67 = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_e]:
-            variable69 = mouse_pos
+            variable69 = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif undo:
             removed_platform.append(platforms.pop())
             undo = False
@@ -204,15 +226,20 @@ while running:
                 custom_rects = []
 
         for objects in custom_rects:
-            pygame.draw.rect(screen, "blue", (new_platform[0]-camx, new_platform[1]-camy, new_platform[2], new_platform[3]))
+            pygame.draw.rect(world_surf, "blue", new_platform)
     #draws bullets
     for bullet in bullet_list:
-        pygame.draw.circle(screen, "yellow", (bullet[0][0] - camx, bullet[0][1] - camy), 5)
+        pygame.draw.circle(world_surf, "yellow", bullet[0], 5)
 
+    #moves cam
+    camx=playerx - WIDTH//2
+    camy=playery - HEIGHT//2
 
     #draws player
-    pygame.draw.rect(screen,(67,255,255),(playerx-PLAYER_WIDTH//2-camx,playery-PLAYER_HEIGHT//2-camy,PLAYER_WIDTH,PLAYER_HEIGHT))
-    
+    pygame.draw.rect(world_surf, (67, 255, 255), (playerx - PLAYER_WIDTH // 2, playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT))
+
+    #puts images onto screen with offset for map
+    screen.blit(world_surf, (-camx, -camy))
     #draws bullet count on screen
     write(f"Bullets: {bullets}/{magazine_size}",(0,0),20,(255,255,255))
 
