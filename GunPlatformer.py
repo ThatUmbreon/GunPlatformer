@@ -258,6 +258,10 @@ while running:
     #you know what ts is ok
     pygame.display.flip()
 
-# close the game when we close it
+platformlist = [str(platform).replace("<rect(","pygame.Rect(").replace(")>",")") for platform in platforms[3:]]
+print("Platforms:")
+for platform in platformlist:
+    print(platform)
 
+# close the game when we close it
 pygame.quit()
