@@ -63,8 +63,8 @@ RECOIL = 20
 bullet_list = []
 shoot = False
 hold = False
-bullets = 6000
-magazine_size= 6000
+bullets = 6
+magazine_size= 6
 
 #creator mode variables
 creator_mode = True
@@ -111,6 +111,8 @@ while running:
                 playery = HEIGHT//2
                 player_xvel = 0
                 player_yvel = 0
+            elif event.key == pygame.K_F9:
+                creator_mode = not creator_mode
     # get inputs
     keys = pygame.key.get_pressed()
     mouse_pos = pygame.mouse.get_pos()
@@ -119,8 +121,8 @@ while running:
     camx = playerx - WIDTH / 2
     camy = playery - HEIGHT / 2
 
-    # stops player from shooting constantly
-    shoot = mouse_click[0] and not hold
+    # stops player from shooting constantly unless creaTIVE MODE
+    shoot = mouse_click[0] and (creator_mode or not hold)
     hold = mouse_click[0]
     
     # shooting, applies recoil and reduces bullets by 1
@@ -145,7 +147,7 @@ while running:
     # caps fall speed to terminal velocity
     player_yvel = min(player_yvel, TERMINAL_VELOCITY)
 
-    # walking figured we would be able to walk, but only jump with recoil
+    # walking
     walk = ((keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])) * PLAYER_SPEED
 
     # untranslated collision detection and response
@@ -167,13 +169,13 @@ while running:
         #actually moving
         if horizontal_blocked:
             player_xvel = 0
-        else:
+        elif not creator_mode:
             playerx += (player_xvel+walk)*dt/4
         if vertical_blocked:
             if player_yvel > 0:
                 bullets = magazine_size
             player_yvel = 0
-        else:
+        elif not creator_mode:
             playery += player_yvel*dt/4
 
     if playerx<PLAYER_WIDTH//2:
@@ -196,7 +198,7 @@ while running:
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
 
-        # levil maker!
+        #creator mode!
     if creator_mode:
         if variable67 != (0,0):
             pygame.draw.circle(world_surf, "red", (variable67), 10)
@@ -224,6 +226,16 @@ while running:
                 variable69 = (0,0)
                 platforms.append(new_platform)
                 custom_rects = []
+        bullets = 6000
+        if keys[pygame.K_w]:
+            playery -= 20
+        if keys[pygame.K_s]:
+            playery += 20
+        if keys[pygame.K_a]:
+            playerx -= 20
+        if keys[pygame.K_d]:
+            playerx += 20
+
 
         for objects in custom_rects:
             pygame.draw.rect(world_surf, "blue", new_platform)
