@@ -113,7 +113,7 @@ while running:
                 player_yvel = 0
     # get inputs
     keys = pygame.key.get_pressed()
-    mouse_pos = pygame.mouse.get_pos()[0]+camx, pygame.mouse.get_pos()[1]+camy
+    mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
 
     camx = playerx - WIDTH / 2
