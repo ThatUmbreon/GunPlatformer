@@ -1,6 +1,16 @@
 # external libraries
 import pygame
 from math import cos, sin, acos, asin, pi
+import random
+pygame.init()
+pygame.mixer.init()
+
+#objects
+platforms = []
+respawn_point = (100,100)
+
+
+
 
 def distance(p1, p2):
     '''pythagoras'''
@@ -29,13 +39,22 @@ def calc_rects(point1, point2):
     rect_height = abs(point1[1] - point2[1])
     new_platform = pygame.Rect(left, top, rect_width, rect_height)
     return new_platform
-# initialize pygame (thats important)
-pygame.init()
 
+def reset():
+    global playerx, playery, player_xvel, player_yvel
+    playerx = respawn_point[0]
+    playery = respawn_point[1]
+    player_xvel = 0
+    player_yvel = 0
+
+def die():
+    global death_time, dying
+    dying = True
+    death_time = 100
 # screen
 WIDTH = 1200
 HEIGHT = 800
-screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|pygame.FULLSCREEN)
+screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|pygame.FULLSCREEN|pygame.SRCALPHA)
 pygame.display.set_caption("GunPlatformer")
 
 #world varbs
@@ -47,8 +66,8 @@ world_surf = pygame.Surface((WLW, WLH))
 PLAYER_WIDTH = 20
 PLAYER_HEIGHT = 20
 PLAYER_SPEED = 5
-playerx = WIDTH//2
-playery = HEIGHT//2
+playerx = respawn_point[0]
+playery = respawn_point[1]
 player_xvel = 0
 player_yvel = 0
 
@@ -75,12 +94,19 @@ undo = False
 redo = False
 removed_platform = []
 
-#cam variables
+#misc
 camx = 0
 camy = 0
+death_time = 0
+dying = False
 
- # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
-platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100),pygame.Rect(WIDTH//2-100,HEIGHT-300,200,30)]
+#file loading
+try:
+    death_image = pygame.image.load('resources/blood-splatter.png').convert_alpha()
+    death_sound = pygame.mixer.Sound('resources/hl2-stalker-scream.mp3')
+except:
+    print("failed to load file")
+death_image = pygame.transform.scale(death_image, (WIDTH, HEIGHT))
 
 # clock for delta time
 clock = pygame.time.Clock()
@@ -92,7 +118,9 @@ fpsCap = 60
 while running:
     # delta time :)
     dt = clock.tick(fpsCap)/1000*(fpsCap if fpsCap > 0 else 1)
-    
+    #background
+    world_surf.fill((67, 41, 69))
+    screen.fill((41,41,41))
     # KILL or fullscreen
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -107,10 +135,7 @@ while running:
             elif event.key == pygame.K_z and keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and platforms != []:
                 redo = True
             elif event.key == pygame.K_r:
-                playerx = WIDTH//2
-                playery = HEIGHT//2
-                player_xvel = 0
-                player_yvel = 0
+                die()
             elif event.key == pygame.K_F9:
                 creator_mode = not creator_mode
     # get inputs
@@ -177,22 +202,24 @@ while running:
             player_yvel = 0
         elif not creator_mode:
             playery += player_yvel*dt/4
-
     if playerx<PLAYER_WIDTH//2:
-        playerx = PLAYER_WIDTH//2
+        playerx = PLAYER_WIDTH//2+1
         player_xvel = 0
+        die()
     elif playerx>WLW-PLAYER_WIDTH//2:
-        playerx = WLW - PLAYER_WIDTH // 2
+        playerx = WLW - PLAYER_WIDTH //2-1
         player_xvel = 0
+        die()
     if playery<PLAYER_HEIGHT//2:
-        playery = PLAYER_HEIGHT//2
+        playery = PLAYER_HEIGHT//2+1
         player_yvel = 0
+        die()
     elif playery>WLH-PLAYER_HEIGHT//2:
-        playery = WLH - PLAYER_HEIGHT // 2
+        playery = WLH - PLAYER_HEIGHT //2-1
         player_yvel = 0
-    #background
-    world_surf.fill((67, 41, 69))
-    screen.fill((41,41,41))
+        reset()
+        die()
+
 
     #draws platfroms
     for platform in platforms:
@@ -208,7 +235,10 @@ while running:
                 variable67 = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_e]:
             variable69 = mouse_pos[0]+camx, mouse_pos[1]+camy
-        elif undo:
+        elif keys[pygame.K_m]:
+            respawn_point = mouse_pos[0]+camx, mouse_pos[1]+camy
+
+        if undo:
             removed_platform.append(platforms.pop())
             undo = False
         try:
@@ -221,12 +251,13 @@ while running:
         if variable67 != (0,0) and variable69 != (0,0):
             new_platform = calc_rects(variable67, variable69)
             custom_rects.append(new_platform)
-            if keys[pygame.K_p]:
+            if keys[pygame.K_z]:
                 variable67 = (0,0)
                 variable69 = (0,0)
                 platforms.append(new_platform)
                 custom_rects = []
         bullets = 6000
+        pygame.draw.rect(world_surf, "green", (respawn_point[0]-20, respawn_point[1]-20, 40, 40))
         if keys[pygame.K_w]:
             playery -= 20
         if keys[pygame.K_s]:
@@ -255,13 +286,26 @@ while running:
     #draws bullet count on screen
     write(f"Bullets: {bullets}/{magazine_size}",(0,0),20,(255,255,255))
 
+    if dying:
+        screen.blit(death_image, (0, 0, death_image.get_width(), death_image.get_height()))
+        death_sound.play()
+        death_time -= 1
+        pygame.display.flip()
+        pygame.time.wait(death_time)
+        dying = False
+        reset()
+
+    rando = random.randint(0,5000)
+    if rando == 1:
+        death_sound.play()
     #you know what ts is ok
     pygame.display.flip()
-
-platformlist = [str(platform).replace("<rect(","pygame.Rect(").replace(")>",")") for platform in platforms[3:]]
+platformlist = [str(platform).replace("<rect(","pygame.Rect(").replace(")>","),") for platform in platforms[:]]
 print("Platforms:")
+
 for platform in platformlist:
     print(platform)
-
+print("respawn point:")
+print(respawn_point)
 # close the game when we close it
 pygame.quit()
