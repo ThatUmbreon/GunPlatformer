@@ -70,6 +70,10 @@ undo = False
 redo = False
 removed_platform = []
 
+#cam shit
+camx = playerx - WIDTH/2
+camy = playery - HEIGHT/2
+
  # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
 platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100),pygame.Rect(WIDTH//2-100,HEIGHT-300,200,30)]
 
@@ -99,9 +103,12 @@ while running:
                 redo = True
     # get inputs
     keys = pygame.key.get_pressed()
-    mouse_pos = pygame.mouse.get_pos()
+    mouse_pos = pygame.mouse.get_pos()[0]+camx, pygame.mouse.get_pos()[1]+camy
     mouse_click = pygame.mouse.get_pressed()
-    
+
+    camx = playerx - WIDTH / 2
+    camy = playery - HEIGHT / 2
+
     # stops player from shooting constantly
     shoot = mouse_click[0] and not hold
     hold = mouse_click[0]
@@ -116,7 +123,7 @@ while running:
     for bullet in bullet_list:
         bullet[0][0] += bullet[1][0] * dt
         bullet[0][1] += bullet[1][1] * dt
-        if bullet[0][0] < 0 or bullet[0][0] > WIDTH or bullet[0][1] < 0 or bullet[0][1] > HEIGHT or any(pygame.Rect(bullet[0][0]-5, bullet[0][1]-5, 10, 10).colliderect(platform) for platform in platforms):
+        if any(pygame.Rect(bullet[0][0]-5, bullet[0][1]-5, 10, 10).colliderect(platform) for platform in platforms):
             bullet_list.remove(bullet)
 
     # applies drag/friction
@@ -131,14 +138,6 @@ while running:
     # walking figured we would be able to walk, but only jump with recoil
     walk = ((keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])) * PLAYER_SPEED
 
-    # player may not go offscreen
-    if PLAYER_WIDTH//2 > playerx or playerx > WIDTH-PLAYER_WIDTH//2:
-        playerx = max(PLAYER_WIDTH//2, min(WIDTH-PLAYER_WIDTH//2, playerx))
-        player_xvel = 0
-    if PLAYER_HEIGHT//2 > playery or playery > HEIGHT-PLAYER_HEIGHT//2:
-        playery = max(PLAYER_HEIGHT//2, min(HEIGHT-PLAYER_HEIGHT//2, playery))
-        player_yvel = 0
-
     # untranslated collision detection and response
     # i use quartersteps (check for collisions 4 times per frame) to make it more accurate and also because thats what super mario 64 does
     # also im checking for horizontal and vertical collisions separately, so that you can slide along walls and not get stuck on corners
@@ -147,7 +146,6 @@ while running:
         horizontal_blocked = False
         vertical_blocked = False
         for platform in platforms:
-            #could you please provide docs on how to make ts work with new platforms, like how do i add a platform that has collision.
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 horizontal_blocked = True
             if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
@@ -155,6 +153,8 @@ while running:
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery+((player_yvel+GRAVITY)*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) and not (pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) or pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform)):
                 horizontal_blocked = True
                 vertical_blocked = True
+
+        #actually moving
         if horizontal_blocked:
             player_xvel = 0
         else:
@@ -169,16 +169,17 @@ while running:
     #background
     screen.fill((67,41,69))
 
-    #draws FLOOR!! (we dont have platforms or anything so its just a floor)
+    #draws platfroms
     for platform in platforms:
+        platform = platform[0]-camx, platform[1]-camy, platform[2], platform[3]
         pygame.draw.rect(screen, "brown", platform)
 
-        # levil maker! doesnt work btw, idk y
+        # levil maker!
     if creator_mode:
         if variable67 != (0,0):
-            pygame.draw.circle(screen, "red", variable67, 10)
+            pygame.draw.circle(screen, "red", (variable67[0]-camx, variable67[1]-camy), 10)
         if variable69 != (0,0):
-            pygame.draw.circle(screen, "purple", variable69, 10)
+            pygame.draw.circle(screen, "purple", (variable69[0]-camx, variable69[1]-camy), 10)
         if keys[pygame.K_q]:
                 variable67 = mouse_pos
         elif keys[pygame.K_e]:
@@ -203,14 +204,14 @@ while running:
                 custom_rects = []
 
         for objects in custom_rects:
-            pygame.draw.rect(screen, "blue", new_platform)
+            pygame.draw.rect(screen, "blue", (new_platform[0]-camx, new_platform[1]-camy, new_platform[2], new_platform[3]))
     #draws bullets
     for bullet in bullet_list:
-        pygame.draw.circle(screen, "yellow", bullet[0], 5)
+        pygame.draw.circle(screen, "yellow", (bullet[0][0] - camx, bullet[0][1] - camy), 5)
 
 
     #draws player
-    pygame.draw.rect(screen,(67,255,255),(playerx-PLAYER_WIDTH//2,playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT))
+    pygame.draw.rect(screen,(67,255,255),(playerx-PLAYER_WIDTH//2-camx,playery-PLAYER_HEIGHT//2-camy,PLAYER_WIDTH,PLAYER_HEIGHT))
     
     #draws bullet count on screen
     write(f"Bullets: {bullets}/{magazine_size}",(0,0),20,(255,255,255))
