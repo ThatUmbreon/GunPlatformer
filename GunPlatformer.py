@@ -113,9 +113,12 @@ while running:
                 player_yvel = 0
     # get inputs
     keys = pygame.key.get_pressed()
-    mouse_pos = pygame.mouse.get_pos()
+    mouse_pos = pygame.mouse.get_pos()[0]+camx, pygame.mouse.get_pos()[1]+camy
     mouse_click = pygame.mouse.get_pressed()
-    
+
+    camx = playerx - WIDTH / 2
+    camy = playery - HEIGHT / 2
+
     # stops player from shooting constantly
     shoot = mouse_click[0] and not hold
     hold = mouse_click[0]
@@ -153,7 +156,6 @@ while running:
         horizontal_blocked = False
         vertical_blocked = False
         for platform in platforms:
-            #could you please provide docs on how to make ts work with new platforms, like how do i add a platform that has collision.
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 horizontal_blocked = True
             if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
@@ -161,6 +163,8 @@ while running:
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery+((player_yvel+GRAVITY)*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) and not (pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) or pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform)):
                 horizontal_blocked = True
                 vertical_blocked = True
+
+        #actually moving
         if horizontal_blocked:
             player_xvel = 0
         else:
@@ -188,11 +192,11 @@ while running:
     world_surf.fill((67, 41, 69))
     screen.fill((41,41,41))
 
-    #draws FLOOR!! (we dont have platforms or anything so its just a floor)
+    #draws platfroms
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
 
-        # levil maker! doesnt work btw, idk y
+        # levil maker!
     if creator_mode:
         if variable67 != (0,0):
             pygame.draw.circle(world_surf, "red", (variable67), 10)
