@@ -23,8 +23,8 @@ def write(msg, pos, size, color):
     screen.blit(sSurf, sRect)
 
 def calc_rects(point1, point2):
-    left = min(point1[0], point2[0])+camx
-    top = min(point1[1], point2[1])+camy
+    left = min(point1[0], point2[0])
+    top = min(point1[1], point2[1])
     rect_width = abs(point1[0] - point2[0])
     rect_height = abs(point1[1] - point2[1])
     new_platform = pygame.Rect(left, top, rect_width, rect_height)
@@ -39,9 +39,9 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|
 pygame.display.set_caption("GunPlatformer")
 
 #world varbs
-WORLDW=10000
-WORLDH=1000
-world_surf = pygame.Surface((WORLDW,WORLDH))
+WLW=10000
+WLH=1000
+world_surf = pygame.Surface((WLW, WLH))
 
 # player variables
 PLAYER_WIDTH = 20
@@ -63,8 +63,8 @@ RECOIL = 20
 bullet_list = []
 shoot = False
 hold = False
-bullets = 6
-magazine_size= 6
+bullets = 6000
+magazine_size= 6000
 
 #creator mode variables
 creator_mode = True
@@ -106,6 +106,11 @@ while running:
                 undo = True
             elif event.key == pygame.K_z and keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and platforms != []:
                 redo = True
+            elif event.key == pygame.K_r:
+                playerx = WIDTH//2
+                playery = HEIGHT//2
+                player_xvel = 0
+                player_yvel = 0
     # get inputs
     keys = pygame.key.get_pressed()
     mouse_pos = pygame.mouse.get_pos()
@@ -125,7 +130,7 @@ while running:
     for bullet in bullet_list:
         bullet[0][0] += bullet[1][0] * dt
         bullet[0][1] += bullet[1][1] * dt
-        if bullet[0][0] < 0 or bullet[0][0] > WIDTH or bullet[0][1] < 0 or bullet[0][1] > HEIGHT or any(pygame.Rect(bullet[0][0]-5, bullet[0][1]-5, 10, 10).colliderect(platform) for platform in platforms):
+        if bullet[0][0] < 0 or bullet[0][0] > WLW or bullet[0][1] < 0 or bullet[0][1] > WLH or any(pygame.Rect(bullet[0][0] - 5, bullet[0][1] - 5, 10, 10).colliderect(platform) for platform in platforms):
             bullet_list.remove(bullet)
 
     # applies drag/friction
@@ -166,9 +171,22 @@ while running:
             player_yvel = 0
         else:
             playery += player_yvel*dt/4
-        
+
+    if playerx<PLAYER_WIDTH//2:
+        playerx = PLAYER_WIDTH//2
+        player_xvel = 0
+    elif playerx>WLW-PLAYER_WIDTH//2:
+        playerx = WLW - PLAYER_WIDTH // 2
+        player_xvel = 0
+    if playery<PLAYER_HEIGHT//2:
+        playery = PLAYER_HEIGHT//2
+        player_yvel = 0
+    elif playery>WLH-PLAYER_HEIGHT//2:
+        playery = WLH - PLAYER_HEIGHT // 2
+        player_yvel = 0
     #background
     world_surf.fill((67, 41, 69))
+    screen.fill((41,41,41))
 
     #draws FLOOR!! (we dont have platforms or anything so its just a floor)
     for platform in platforms:
@@ -177,13 +195,13 @@ while running:
         # levil maker! doesnt work btw, idk y
     if creator_mode:
         if variable67 != (0,0):
-            pygame.draw.circle(world_surf, "red", (variable67[0] + camx, variable67[1] + camy), 10)
+            pygame.draw.circle(world_surf, "red", (variable67), 10)
         if variable69 != (0,0):
-            pygame.draw.circle(world_surf, "purple", (variable69[0] + camx, variable69[1] + camy), 10)
+            pygame.draw.circle(world_surf, "purple", (variable69), 10)
         if keys[pygame.K_q]:
-                variable67 = mouse_pos
+                variable67 = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_e]:
-            variable69 = mouse_pos
+            variable69 = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif undo:
             removed_platform.append(platforms.pop())
             undo = False
