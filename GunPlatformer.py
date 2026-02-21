@@ -23,8 +23,8 @@ def write(msg, pos, size, color):
     screen.blit(sSurf, sRect)
 
 def calc_rects(point1, point2):
-    left = min(point1[0], point2[0])
-    top = min(point1[1], point2[1])
+    left = min(point1[0], point2[0])+camx
+    top = min(point1[1], point2[1])+camy
     rect_width = abs(point1[0] - point2[0])
     rect_height = abs(point1[1] - point2[1])
     new_platform = pygame.Rect(left, top, rect_width, rect_height)
@@ -37,6 +37,11 @@ WIDTH = 1200
 HEIGHT = 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|pygame.FULLSCREEN)
 pygame.display.set_caption("GunPlatformer")
+
+#world varbs
+WORLDW=10000
+WORLDH=1000
+world_surf = pygame.Surface((WORLDW,WORLDH))
 
 # player variables
 PLAYER_WIDTH = 20
@@ -69,6 +74,10 @@ variable69 = (0,0)
 undo = False
 redo = False
 removed_platform = []
+
+#cam variables
+camx = 0
+camy = 0
 
  # for starters we should just store platforms as rects, and then later we can add types and stuff to them by making them a list of [type, rect] or something
 platforms = [pygame.Rect(0,HEIGHT-100,WIDTH,100),pygame.Rect(WIDTH-200,HEIGHT-200,200,100),pygame.Rect(WIDTH//2-100,HEIGHT-300,200,30)]
@@ -108,8 +117,8 @@ while running:
     
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
-        player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx,playery), mouse_pos, pi)
-        bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx,playery), mouse_pos)])
+        player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
+        bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx-camx,playery-camy), mouse_pos)])
         bullets -= 1
 
     # moves bullets according to their velocity, and removes them if they go offscreen
@@ -130,14 +139,6 @@ while running:
 
     # walking figured we would be able to walk, but only jump with recoil
     walk = ((keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])) * PLAYER_SPEED
-
-    # player may not go offscreen
-    if PLAYER_WIDTH//2 > playerx or playerx > WIDTH-PLAYER_WIDTH//2:
-        playerx = max(PLAYER_WIDTH//2, min(WIDTH-PLAYER_WIDTH//2, playerx))
-        player_xvel = 0
-    if PLAYER_HEIGHT//2 > playery or playery > HEIGHT-PLAYER_HEIGHT//2:
-        playery = max(PLAYER_HEIGHT//2, min(HEIGHT-PLAYER_HEIGHT//2, playery))
-        player_yvel = 0
 
     # untranslated collision detection and response
     # i use quartersteps (check for collisions 4 times per frame) to make it more accurate and also because thats what super mario 64 does
@@ -167,18 +168,18 @@ while running:
             playery += player_yvel*dt/4
         
     #background
-    screen.fill((67,41,69))
+    world_surf.fill((67, 41, 69))
 
     #draws FLOOR!! (we dont have platforms or anything so its just a floor)
     for platform in platforms:
-        pygame.draw.rect(screen, "brown", platform)
+        pygame.draw.rect(world_surf, "brown", platform)
 
         # levil maker! doesnt work btw, idk y
     if creator_mode:
         if variable67 != (0,0):
-            pygame.draw.circle(screen, "red", variable67, 10)
+            pygame.draw.circle(world_surf, "red", (variable67[0] + camx, variable67[1] + camy), 10)
         if variable69 != (0,0):
-            pygame.draw.circle(screen, "purple", variable69, 10)
+            pygame.draw.circle(world_surf, "purple", (variable69[0] + camx, variable69[1] + camy), 10)
         if keys[pygame.K_q]:
                 variable67 = mouse_pos
         elif keys[pygame.K_e]:
@@ -203,15 +204,20 @@ while running:
                 custom_rects = []
 
         for objects in custom_rects:
-            pygame.draw.rect(screen, "blue", new_platform)
+            pygame.draw.rect(world_surf, "blue", new_platform)
     #draws bullets
     for bullet in bullet_list:
-        pygame.draw.circle(screen, "yellow", bullet[0], 5)
+        pygame.draw.circle(world_surf, "yellow", bullet[0], 5)
 
+    #moves cam
+    camx=playerx - WIDTH//2
+    camy=playery - HEIGHT//2
 
     #draws player
-    pygame.draw.rect(screen,(67,255,255),(playerx-PLAYER_WIDTH//2,playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT))
-    
+    pygame.draw.rect(world_surf, (67, 255, 255), (playerx - PLAYER_WIDTH // 2, playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT))
+
+    #puts images onto screen with offset for map
+    screen.blit(world_surf, (-camx, -camy))
     #draws bullet count on screen
     write(f"Bullets: {bullets}/{magazine_size}",(0,0),20,(255,255,255))
 
