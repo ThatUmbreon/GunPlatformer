@@ -2,13 +2,15 @@
 import pygame
 from math import cos, sin, acos, asin, pi
 import random
+
+from pygame.examples.midi import null_key
+
 pygame.init()
 pygame.mixer.init()
 
 #objects
 platforms = []
 respawn_point = (100,100)
-
 
 
 
@@ -51,6 +53,12 @@ def die():
     global death_time, dying
     dying = True
     death_time = 100
+
+def win():
+    global level, change_level
+    level += 1
+    change_level = True
+
 # screen
 WIDTH = 1200
 HEIGHT = 800
@@ -70,6 +78,7 @@ playerx = respawn_point[0]
 playery = respawn_point[1]
 player_xvel = 0
 player_yvel = 0
+
 
 # physics variables
 DRAG = 0.9
@@ -93,6 +102,40 @@ variable69 = (0,0)
 undo = False
 redo = False
 removed_platform = []
+
+#levels and shit
+change_level = True
+win_zone = (WIDTH-100, 0, 100, HEIGHT)
+
+level = int(1)
+level0 = []
+level1 = [pygame.Rect(96, 498, 577, 107),
+pygame.Rect(770, 494, 356, 118),
+pygame.Rect(1327, 492, 373, 125),
+pygame.Rect(1199, -39, 54, 540),]
+
+level2 = [pygame.Rect(81, 529, 492, 65),
+pygame.Rect(1136, 531, 345, 109),
+pygame.Rect(2053, 506, 161, 89),
+pygame.Rect(2381, -77, 38, 949),
+pygame.Rect(2590, 516, 284, 72),
+pygame.Rect(2961, 121, 54, 903),
+pygame.Rect(3314, 116, 42, 906),
+pygame.Rect(3619, 118, 48, 949),
+pygame.Rect(4023, -15, 47, 672),
+pygame.Rect(3873, 635, 365, 52),
+pygame.Rect(4427, 191, 70, 813),
+pygame.Rect(4464, 940, 120, 51),
+pygame.Rect(4639, -132, 64, 991),
+pygame.Rect(4656, 748, 553, 108),
+pygame.Rect(5332, 248, 60, 761),
+pygame.Rect(4786, 509, 564, 85),
+pygame.Rect(4680, 256, 581, 83),
+pygame.Rect(4778, 85, 427, 78),
+pygame.Rect(5182, 87, 216, 76),
+pygame.Rect(5331, 136, 62, 116),
+pygame.Rect(5629, -18, 34, 1111),]
+
 
 #misc
 camx = 0
@@ -135,9 +178,34 @@ while running:
             elif event.key == pygame.K_z and keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and platforms != []:
                 redo = True
             elif event.key == pygame.K_r:
-                die()
+                reset()
             elif event.key == pygame.K_F9:
                 creator_mode = not creator_mode
+            elif event.key == pygame.K_F1:
+                level -= 1
+                change_level = True
+            elif event.key == pygame.K_F2:
+                level += 1
+                change_level = True
+    #levels shit
+    if change_level:
+        if level == 0:
+            platforms = level0
+            reset()
+            change_level = False
+        elif level == 1:
+            platforms = level1
+            respawn_point = (370.0, 419.0)
+            win_zone = (1747, -11, 164, 1026)
+            reset()
+            change_level = False
+        elif level == 2:
+            platforms = level2
+            respawn_point = (370.0, 419.0)
+            win_zone = (5387, 843, 246, 157)
+            reset()
+            change_level = False
+
     # get inputs
     keys = pygame.key.get_pressed()
     mouse_pos = pygame.mouse.get_pos()
@@ -149,7 +217,7 @@ while running:
     # stops player from shooting constantly unless creaTIVE MODE
     shoot = mouse_click[0] and (creator_mode or not hold)
     hold = mouse_click[0]
-    
+
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
         player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
@@ -191,6 +259,7 @@ while running:
                 horizontal_blocked = True
                 vertical_blocked = True
 
+
         #actually moving
         if horizontal_blocked:
             player_xvel = 0
@@ -221,9 +290,11 @@ while running:
         die()
 
 
-    #draws platfroms
+    #draws platfroms and shit
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
+    pygame.draw.rect(world_surf, "yellow", (respawn_point[0] - 20, respawn_point[1] - 20, 40, 40))
+    pygame.draw.rect(world_surf, "green", (win_zone))
 
         #creator mode!
     if creator_mode:
@@ -256,8 +327,13 @@ while running:
                 variable69 = (0,0)
                 platforms.append(new_platform)
                 custom_rects = []
+            elif keys[pygame.K_l]:
+                variable67 = (0,0)
+                variable69 = (0,0)
+                custom_rects = []
+                win_zone = (new_platform)
+
         bullets = 6000
-        pygame.draw.rect(world_surf, "green", (respawn_point[0]-20, respawn_point[1]-20, 40, 40))
         if keys[pygame.K_w]:
             playery -= 20
         if keys[pygame.K_s]:
@@ -279,7 +355,16 @@ while running:
     camy=playery - HEIGHT//2
 
     #draws player
+    player_rect = pygame.Rect(playerx - PLAYER_WIDTH // 2, playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT)
     pygame.draw.rect(world_surf, (67, 255, 255), (playerx - PLAYER_WIDTH // 2, playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT))
+
+    #checks for win
+    win = pygame.Rect(player_rect).colliderect(win_zone)
+    if win:
+        print("winner")
+        level += 1
+        change_level = True
+        reset()
 
     #puts images onto screen with offset for map
     screen.blit(world_surf, (-camx, -camy))
@@ -295,17 +380,20 @@ while running:
         dying = False
         reset()
 
-    rando = random.randint(0,5000)
+    rando = random.randint(0,10000)
     if rando == 1:
         death_sound.play()
     #you know what ts is ok
     pygame.display.flip()
 platformlist = [str(platform).replace("<rect(","pygame.Rect(").replace(")>","),") for platform in platforms[:]]
 print("Platforms:")
-
 for platform in platformlist:
     print(platform)
+
 print("respawn point:")
 print(respawn_point)
+print("win_zone:")
+win_zone = str(win_zone).replace("<rect(","(").replace(")>",")")
+print(win_zone)
 # close the game when we close it
 pygame.quit()
