@@ -215,8 +215,9 @@ while running:
     camy = playery - HEIGHT / 2
 
     # stops player from shooting constantly unless creaTIVE MODE
-    shoot = mouse_click[0] and (creator_mode or not hold)
+    shoot = mouse_click[0] and (creator_mode or not hold) or keys[pygame.K_SPACE] and not space_hold
     hold = mouse_click[0]
+    space_hold = keys[pygame.K_SPACE]
 
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
