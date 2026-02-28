@@ -102,6 +102,7 @@ variable69 = (0,0)
 undo = False
 redo = False
 removed_platform = []
+deleting = False
 
 #levels and shit
 change_level = True
@@ -135,20 +136,30 @@ pygame.Rect(4778, 85, 427, 78),
 pygame.Rect(5182, 87, 216, 76),
 pygame.Rect(5331, 136, 62, 116),
 pygame.Rect(5629, -18, 34, 1111),]
-level3 = [pygame.Rect(81, 529, 492, 65),
-pygame.Rect(1136, 531, 345, 109),
-pygame.Rect(2053, 506, 161, 89),
-pygame.Rect(2381, -77, 38, 949),
-pygame.Rect(2590, 516, 284, 72),
-pygame.Rect(2961, 121, 54, 903),
-pygame.Rect(3314, 116, 42, 906),
-pygame.Rect(3619, 118, 48, 949),
-pygame.Rect(4023, -15, 47, 672),
-pygame.Rect(3873, 635, 365, 52),
-pygame.Rect(616, 331, 191, 419),
-pygame.Rect(340, 205, 88, 399),
+level3 = [
+pygame.Rect(67, 457, 331, 86),
+pygame.Rect(463, -50, 214, 588),
+pygame.Rect(468, 536, 33, 395),
+pygame.Rect(427, 965, 83, 27),
+pygame.Rect(601, 972, 81, 24),
+pygame.Rect(505, 904, 94, 11),
+pygame.Rect(547, 899, 18, 50),
+pygame.Rect(647, 574, 33, 401),
+pygame.Rect(591, 669, 58, 28),
+pygame.Rect(498, 670, 59, 28),
+pygame.Rect(978, 971, 29, 33),
+pygame.Rect(671, 510, 581, 27),
+pygame.Rect(734, 538, 151, 420),
+pygame.Rect(779, 992, 72, 21),
+pygame.Rect(877, 894, 395, 34),
+pygame.Rect(913, 930, 10, 26),
+pygame.Rect(956, 964, 9, 41),
+pygame.Rect(1268, 896, 524, 15),
+pygame.Rect(666, 585, 14, 388),
+pygame.Rect(666, 607, 15, 366),
+pygame.Rect(673, 579, 8, 391),
+pygame.Rect(667, 575, 20, 399),
 ]
-
 
 
 #misc
@@ -271,6 +282,7 @@ while running:
         horizontal_blocked = False
         vertical_blocked = False
         for platform in platforms:
+
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 horizontal_blocked = True
             if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
@@ -330,12 +342,17 @@ while running:
             respawn_point = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_BACKSPACE]:
             deleting = True
+        for platform in platforms:
+            if deleting:
+                did_collide = platform.collidepoint(mouse_pos[0]+camx, mouse_pos[1]+camy)
+                if did_collide:
+                    print("collidign")
+                    removed_platform.append(platforms.pop(platforms.index(platform)))
+                deleting = False
         if undo:
             removed_platform.append(platforms.pop())
             undo = False
         try:
-            if deleting:
-                pass
             if redo and removed_platform:
                 platforms.append(removed_platform[-1])
                 removed_platform.remove(removed_platform[-1])
