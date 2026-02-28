@@ -3,13 +3,14 @@ import pygame
 from math import cos, sin, acos, asin, pi
 import random
 
-from pygame.examples.midi import null_key
+
 
 pygame.init()
 pygame.mixer.init()
 
 #objects
 platforms = []
+killboxes = []
 respawn_point = (100,100)
 
 
@@ -43,21 +44,24 @@ def calc_rects(point1, point2):
     return new_platform
 
 def reset():
-    global playerx, playery, player_xvel, player_yvel
+    global playerx, playery, player_xvel, player_yvel, change_level, bullets, magazine_size
     playerx = respawn_point[0]
     playery = respawn_point[1]
     player_xvel = 0
     player_yvel = 0
+    change_level = False
+    bullets = magazine_size
 
 def die():
     global death_time, dying
     dying = True
     death_time = 100
 
-def win():
-    global level, change_level
+def won():
+    global level, change_level, won
     level += 1
     change_level = True
+
 
 # screen
 WIDTH = 1200
@@ -160,7 +164,17 @@ pygame.Rect(666, 607, 15, 366),
 pygame.Rect(673, 579, 8, 391),
 pygame.Rect(667, 575, 20, 399),
 ]
+level4 = [pygame.Rect(476, 114, 40, 325),
+pygame.Rect(714, 122, 33, 320),
+pygame.Rect(290, 663, 91, 385),
+pygame.Rect(1915, 834, 17, 45),
+pygame.Rect(516, 725, 25, 48),]
 
+level4_kill = [pygame.Rect(-15, 529, 1714, 39),
+pygame.Rect(490, 108, 13, 11),
+pygame.Rect(723, 119, 16, 9),
+pygame.Rect(1925, -13, 64, 1105),
+pygame.Rect(470, 564, 54, 342),]
 
 #misc
 camx = 0
@@ -216,25 +230,32 @@ while running:
     if change_level:
         if level == 0:
             platforms = level0
-            reset()
-            change_level = False
+            killboxes = []
         elif level == 1:
             platforms = level1
             respawn_point = (370.0, 419.0)
             win_zone = (1747, -11, 164, 1026)
-            reset()
-            change_level = False
+            killboxes = []
         elif level == 2:
             platforms = level2
             respawn_point = (370.0, 419.0)
             win_zone = (5387, 843, 246, 157)
-            reset()
-            change_level = False
+            killboxes = []
         elif level == 3:
             platforms = level3
-            respawn_point = (0, 0)
-            reset()
-            change_level = False
+            respawn_point = (236.0, 294.0)
+            win_zone = (670, -89, 226, 606)
+            killboxes = []
+        elif level == 4:
+            platforms = level4
+            respawn_point = (206.0, 279.0)
+            win_zone = (-7, 566, 309, 491)
+            killboxes = level4_kill
+        elif level > 0:
+            level -=1
+            print("no more levels")
+        reset()
+        print(level)
 
     # get inputs
     keys = pygame.key.get_pressed()
@@ -245,9 +266,12 @@ while running:
     camy = playery - HEIGHT / 2
 
     # stops player from shooting constantly unless creaTIVE MODE
-    shoot = mouse_click[0] and (creator_mode or not hold) or keys[pygame.K_SPACE] and not space_hold
+    shoot = (mouse_click[0] and (creator_mode or not hold)) or (keys[pygame.K_SPACE] and not space_hold)
     hold = mouse_click[0]
-    space_hold = keys[pygame.K_SPACE]
+    if keys[pygame.K_SPACE] and not creator_mode:
+        space_hold = True
+    else:
+        space_hold = False
 
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
@@ -282,7 +306,6 @@ while running:
         horizontal_blocked = False
         vertical_blocked = False
         for platform in platforms:
-
             if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
                 horizontal_blocked = True
             if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
@@ -303,30 +326,42 @@ while running:
             player_yvel = 0
         elif not creator_mode:
             playery += player_yvel*dt/4
-    if playerx<PLAYER_WIDTH//2:
-        playerx = PLAYER_WIDTH//2+1
-        player_xvel = 0
-        die()
-    elif playerx>WLW-PLAYER_WIDTH//2:
-        playerx = WLW - PLAYER_WIDTH //2-1
-        player_xvel = 0
-        die()
-    if playery<PLAYER_HEIGHT//2:
-        playery = PLAYER_HEIGHT//2+1
-        player_yvel = 0
-        die()
-    elif playery>WLH-PLAYER_HEIGHT//2:
-        playery = WLH - PLAYER_HEIGHT //2-1
-        player_yvel = 0
-        reset()
-        die()
+
+    #death collision
+    if not creator_mode:
+        for i in range(4):
+            for boxes in killboxes:
+                if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(boxes):
+                    die()
+                if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(boxes):
+                    die()
+        if playerx<0:
+            playerx = PLAYER_WIDTH//2+1
+            player_xvel = 0
+            die()
+        elif playerx>WLW:
+            playerx = WLW - PLAYER_WIDTH //2-1
+            player_xvel = 0
+            die()
+        if playery<0:
+            playery = PLAYER_HEIGHT//2+1
+            player_yvel = 0
+            die()
+        elif playery>WLH:
+            playery = WLH - PLAYER_HEIGHT //2-1
+            player_yvel = 0
+            reset()
+            die()
 
 
     #draws platfroms and shit
+
+    pygame.draw.rect(world_surf, "green", win_zone)
+    for boxes in killboxes:
+        pygame.draw.rect(world_surf, (100,20,20), boxes)
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
     pygame.draw.rect(world_surf, "yellow", (respawn_point[0] - 20, respawn_point[1] - 20, 40, 40))
-    pygame.draw.rect(world_surf, "green", (win_zone))
 
         #creator mode!
     if creator_mode:
@@ -342,13 +377,17 @@ while running:
             respawn_point = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_BACKSPACE]:
             deleting = True
-        for platform in platforms:
-            if deleting:
-                did_collide = platform.collidepoint(mouse_pos[0]+camx, mouse_pos[1]+camy)
-                if did_collide:
-                    print("collidign")
+        if deleting:
+            for platform in platforms:
+                if platform.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
                     removed_platform.append(platforms.pop(platforms.index(platform)))
-                deleting = False
+            for boxes in killboxes:
+                if boxes.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
+                    killboxes.remove(boxes)
+            win_rect = pygame.Rect(win_zone[0], win_zone[1], win_zone[2], win_zone[3])
+            if win_rect.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
+                win_zone = (0,0,0,0)
+            deleting = False
         if undo:
             removed_platform.append(platforms.pop())
             undo = False
@@ -371,7 +410,12 @@ while running:
                 variable67 = (0,0)
                 variable69 = (0,0)
                 custom_rects = []
-                win_zone = (new_platform)
+                win_zone = new_platform
+            elif keys[pygame.K_g]:
+                variable67 = (0,0)
+                variable69 = (0,0)
+                custom_rects = []
+                killboxes.append(new_platform)
 
         bullets = 6000
         if keys[pygame.K_w]:
@@ -401,10 +445,8 @@ while running:
     #checks for win
     win = pygame.Rect(player_rect).colliderect(win_zone)
     if win:
-        print("winner")
-        level += 1
-        change_level = True
-        reset()
+        won()
+
 
     #puts images onto screen with offset for map
     screen.blit(world_surf, (-camx, -camy))
@@ -429,9 +471,13 @@ platformlist = [str(platform).replace("<rect(","pygame.Rect(").replace(")>","),"
 print("Platforms:")
 for platform in platformlist:
     print(platform)
+killboxlist = [str(boxes).replace("<rect(","pygame.Rect(").replace(")>","),") for boxes in killboxes[:]]
+print("Killboxes:")
+for boxes in killboxlist:
+    print(boxes)
 
 print("respawn point:")
-print(respawn_point)
+print((respawn_point[0]//1, respawn_point[1]//1))
 print("win_zone:")
 win_zone = str(win_zone).replace("<rect(","(").replace(")>",")")
 print(win_zone)
