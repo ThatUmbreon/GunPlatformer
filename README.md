@@ -39,6 +39,7 @@ controls:
     a = moves player left
     s = moves player down
     d = moves player right
+    6+7 = saves current level
 
 How to play:
     shoot and you will be pushed in the opposite direction of where you shoot
