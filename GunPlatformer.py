@@ -62,6 +62,33 @@ def won():
     level += 1
     change_level = True
 
+#I have tested this, this works
+def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect]) -> None:
+    with open(File, 'w') as file:
+        for i in boxes:
+            file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
+        file.write("kill\n")
+        for i in killBoxes:
+            file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
+
+def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect]]:
+    mode = 'boxes'
+    boxes : list[pygame.Rect] = []
+    killboxes : list[pygame.Rect] = []
+    with open(File, 'r') as file:
+        for line in file:
+            try:
+                line = line[:-1]
+                if line=="kill":
+                    mode = 'kill'
+                elif mode=='boxes':
+                    boxes.append(eval(line))
+                else:
+                    killboxes.append(eval(line))
+            except:
+                pass
+    return boxes,killboxes
+#this works, I tested it
 
 # screen
 WIDTH = 1200
@@ -482,4 +509,5 @@ print("win_zone:")
 win_zone = str(win_zone).replace("<rect(","(").replace(")>",")")
 print(win_zone)
 # close the game when we close it
+
 pygame.quit()
