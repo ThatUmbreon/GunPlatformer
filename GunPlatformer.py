@@ -267,34 +267,23 @@ while running:
             elif event.key == pygame.K_F2:
                 level += 1
                 change_level = True
-    #levels shit
+                
+    #level switching
     if change_level:
-        if level == 0:
-            platforms = level0
-            killboxes = []
-        elif level == 1:
-            platforms = level1
-            respawn_point = (370.0, 419.0)
-            win_zone = (1747, -11, 164, 1026)
-            killboxes = []
-        elif level == 2:
-            platforms = level2
-            respawn_point = (370.0, 419.0)
-            win_zone = (5387, 843, 246, 157)
-            killboxes = []
-        elif level == 3:
-            platforms = level3
-            respawn_point = (236.0, 294.0)
-            win_zone = (670, -89, 226, 606)
-            killboxes = []
-        elif level == 4:
-            platforms = level4
-            respawn_point = (206.0, 279.0)
-            win_zone = (-7, 566, 309, 491)
-            killboxes = level4_kill
-        elif level > 0:
-            level -=1
-            print("no more levels")
+        match level:
+            case 1:
+                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level1")
+            case 2:
+                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level2")
+            case 3:
+                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level3")
+            case 4:
+                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level4")
+            case 5:
+                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level5")
+            case _:
+                level -=1
+                print("no more levels")
         reset()
         print(level)
 
@@ -525,6 +514,7 @@ print(win_zone)
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
