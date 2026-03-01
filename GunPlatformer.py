@@ -104,6 +104,23 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,
     return boxes,killboxes,spawnpoint,winzone
 #this works, I tested it
 
+def getFile(level : int) -> str:
+    File : str = None
+    match level:
+        case 1:
+            File = "levels/level1"
+        case 2:
+            File = "levels/level2"
+        case 3:
+            File = "levels/level3"
+        case 4:
+            File = "levels/level4"
+        case 5:
+            File = "levels/level5"
+        case _:
+            File = None
+    return File
+
 # screen
 WIDTH = 1200
 HEIGHT = 800
@@ -270,20 +287,10 @@ while running:
                 
     #level switching
     if change_level:
-        match level:
-            case 1:
-                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level1")
-            case 2:
-                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level2")
-            case 3:
-                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level3")
-            case 4:
-                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level4")
-            case 5:
-                platforms,killboxes,respawn_point,win_zone = fileRead("levels/level5")
-            case _:
-                level -=1
-                print("no more levels")
+        platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
+        if getFile(level)==None:
+            level -=1
+            print("no more levels")
         reset()
         print(level)
 
@@ -446,6 +453,8 @@ while running:
                 variable69 = (0,0)
                 custom_rects = []
                 killboxes.append(new_platform)
+        if keys[pygame.K_6] and keys[pygame.K_7]:
+            fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_zone)
 
         bullets = 6000
         if keys[pygame.K_w]:
@@ -514,6 +523,7 @@ print(win_zone)
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
