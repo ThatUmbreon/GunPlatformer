@@ -73,7 +73,7 @@ def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rec
         file.write("spawn\n")
         file.write(f"{spawnPoint}\n")
         file.write("win\n")
-        
+        file.write(f"{winZone}\n")
 
 def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,int]]:
     mode = 'boxes'
@@ -525,4 +525,5 @@ print(win_zone)
 # close the game when we close it
 
 pygame.quit()
+
 
