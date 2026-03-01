@@ -9,3 +9,7 @@ pygame.Rect(490, 108, 13, 11)
 pygame.Rect(723, 119, 16, 9)
 pygame.Rect(1925, -13, 64, 1105)
 pygame.Rect(470, 564, 54, 342)
+spawn
+(206, 279)
+win
+(-7, 566, 309, 491)
