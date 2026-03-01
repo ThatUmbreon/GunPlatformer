@@ -63,31 +63,45 @@ def won():
     change_level = True
 
 #I have tested this, this works
-def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect]) -> None:
+def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : tuple[int,int,int,int]) -> None:
     with open(File, 'w') as file:
         for i in boxes:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("kill\n")
         for i in killBoxes:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
+        file.write("spawn\n")
+        file.write(f"{spawnPoint}\n")
+        file.write("win\n")
+        
 
-def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect]]:
+def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,int]]:
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
+    spawnpoint : tuple[int,int]
+    winzone : tuple[int,int,int,int]
     with open(File, 'r') as file:
         for line in file:
             try:
                 line = line[:-1]
                 if line=="kill":
                     mode = 'kill'
+                elif line =="spawn":
+                    mode = 'spawn'
+                elif line =="win":
+                    mode = 'win'
                 elif mode=='boxes':
                     boxes.append(eval(line))
-                else:
+                elif mode=='kill':
                     killboxes.append(eval(line))
+                elif mode=='spawn':
+                    spawnpoint=eval(line)
+                elif mode=='win':
+                    winzone=eval(line)
             except:
                 pass
-    return boxes,killboxes
+    return boxes,killboxes,spawnpoint,winzone
 #this works, I tested it
 
 # screen
@@ -511,3 +525,4 @@ print(win_zone)
 # close the game when we close it
 
 pygame.quit()
+
