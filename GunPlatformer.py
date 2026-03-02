@@ -454,7 +454,7 @@ while running:
                 custom_rects = []
                 killboxes.append(new_platform)
         if keys[pygame.K_6] and keys[pygame.K_7]:
-            fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_zone)
+            fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_zone))
 
         bullets = 6000
         if keys[pygame.K_w]:
