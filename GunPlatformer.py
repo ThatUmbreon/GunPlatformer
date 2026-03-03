@@ -287,10 +287,15 @@ while running:
                 
     #level switching
     if change_level:
-        platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
-        if getFile(level)==None:
-            level -=1
-            print("no more levels")
+        if level >= 1 and level <= 4:
+            platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
+            if getFile(level)==None:
+                level -=1
+        elif level > 4:
+            level = 4
+        else:
+            level = 1
+        print("no more levels")
         reset()
         print(level)
 
