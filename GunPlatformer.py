@@ -2,6 +2,8 @@
 import pygame
 from math import cos, sin, acos, asin, pi
 import random
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 
