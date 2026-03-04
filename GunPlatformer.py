@@ -123,6 +123,11 @@ def getFile(level : int) -> str:
             File = None
     return File
 
+def print_at_end(title, list):
+    evil_list = [str(whatever).replace("<rect(", "pygame.Rect(").replace(")>", "),") for whatever in list[:]]
+    print(title)
+    print(evil_list)
+
 # screen
 WIDTH = 1200
 HEIGHT = 800
@@ -171,6 +176,7 @@ deleting = False
 #levels and shit
 change_level = True
 win_zone = (WIDTH-100, 0, 100, HEIGHT)
+jump_zones = []
 
 level = int(1)
 level0 = []
@@ -236,6 +242,9 @@ pygame.Rect(723, 119, 16, 9),
 pygame.Rect(1925, -13, 64, 1105),
 pygame.Rect(470, 564, 54, 342),]
 
+level5 = []
+level5_kill = []
+level5_jump = []
 #misc
 camx = 0
 camy = 0
@@ -244,8 +253,8 @@ dying = False
 
 #file loading
 try:
-    death_image = pygame.image.load('resources/blood-splatter.png').convert_alpha()
-    death_sound = pygame.mixer.Sound('resources/hl2-stalker-scream.mp3')
+    death_image = pygame.image.load('assets/blood-splatter.png').convert_alpha()
+    death_sound = pygame.mixer.Sound('assets/hl2-stalker-scream.mp3')
 except:
     print("failed to load file")
 death_image = pygame.transform.scale(death_image, (WIDTH, HEIGHT))
@@ -295,9 +304,10 @@ while running:
                 level -=1
         elif level > 4:
             level = 4
+            print("no more levels")
         else:
+            print("no more levels")
             level = 1
-        print("no more levels")
         reset()
         print(level)
 
@@ -446,23 +456,20 @@ while running:
             new_platform = calc_rects(variable67, variable69)
             custom_rects.append(new_platform)
             if keys[pygame.K_z]:
-                variable67 = (0,0)
-                variable69 = (0,0)
                 platforms.append(new_platform)
-                custom_rects = []
             elif keys[pygame.K_l]:
-                variable67 = (0,0)
-                variable69 = (0,0)
-                custom_rects = []
                 win_zone = new_platform
             elif keys[pygame.K_g]:
-                variable67 = (0,0)
-                variable69 = (0,0)
-                custom_rects = []
                 killboxes.append(new_platform)
+            elif keys[pygame.K_j]:
+                jump_zones.append(new_platform)
+            variable67 = (0, 0)
+            variable69 = (0, 0)
+            custom_rects = []
+
+
         if keys[pygame.K_6] and keys[pygame.K_7]:
             fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_zone))
-
         bullets = 6000
         if keys[pygame.K_w]:
             playery -= 20
@@ -513,20 +520,10 @@ while running:
         death_sound.play()
     #you know what ts is ok
     pygame.display.flip()
-platformlist = [str(platform).replace("<rect(","pygame.Rect(").replace(")>","),") for platform in platforms[:]]
-print("Platforms:")
-for platform in platformlist:
-    print(platform)
-killboxlist = [str(boxes).replace("<rect(","pygame.Rect(").replace(")>","),") for boxes in killboxes[:]]
-print("Killboxes:")
-for boxes in killboxlist:
-    print(boxes)
-
-print("respawn point:")
-print((respawn_point[0]//1, respawn_point[1]//1))
-print("win_zone:")
-win_zone = str(win_zone).replace("<rect(","(").replace(")>",")")
-print(win_zone)
+print_at_end("Platforms", platforms)
+print_at_end("Killboxes", killboxes)
+print_at_end("Respawn Point", respawn_point)
+print_at_end("Win Zone", win_zone)
 # close the game when we close it
 
 pygame.quit()
