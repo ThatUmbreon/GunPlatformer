@@ -251,9 +251,67 @@ pygame.Rect(723, 119, 16, 9),
 pygame.Rect(1925, -13, 64, 1105),
 pygame.Rect(470, 564, 54, 342),]
 
-level5 = []
-level5_kill = []
-level5_jump = []
+level5 = [pygame.Rect(2, 968, 87, 32),
+pygame.Rect(-5, 906, 13, 103),
+pygame.Rect(5, 901, 205, 12),
+pygame.Rect(155, 942, 43, 66),
+pygame.Rect(33, 775, 179, 73),
+pygame.Rect(2, 649, 27, 22),
+pygame.Rect(-5, 650, 18, 20),
+pygame.Rect(139, 272, 90, 31),
+pygame.Rect(372, 414, 168, 46),
+pygame.Rect(373, 456, 74, 490),
+pygame.Rect(450, 993, 60, 10),
+pygame.Rect(2287, 978, 59, 23),
+pygame.Rect(2379, 506, 133, 498),
+pygame.Rect(2121, 575, 256, 38),
+pygame.Rect(2121, 437, 181, 66),
+pygame.Rect(2208, 679, 87, 15),
+pygame.Rect(2381, -6, 130, 512),
+pygame.Rect(1995, -2, 61, 335),
+pygame.Rect(1854, 665, 149, 23),
+pygame.Rect(1888, 287, 61, 25),
+pygame.Rect(1671, 85, 49, 605),
+pygame.Rect(1485, 640, 187, 44),
+pygame.Rect(1210, 248, 131, 49),
+pygame.Rect(908, -6, 60, 489)]
+
+level5_kill = [pygame.Rect(115, 946, 39, 55),
+pygame.Rect(88, 971, 43, 32),
+pygame.Rect(294, 835, 45, 173),
+pygame.Rect(294, 775, 44, 61),
+pygame.Rect(211, 775, 90, 17),
+pygame.Rect(34, 650, 17, 70),
+pygame.Rect(296, 213, 42, 562),
+pygame.Rect(37, 211, 44, 439),
+pygame.Rect(155, 550, 140, 40),
+pygame.Rect(76, 311, 121, 28),
+pygame.Rect(296, 105, 43, 106),
+pygame.Rect(26, 629, 10, 36),
+pygame.Rect(-22, 214, 59, 434),
+pygame.Rect(296, 207, 43, 16),
+pygame.Rect(323, 106, 107, 110),
+pygame.Rect(538, 0, 49, 463),
+pygame.Rect(448, 649, 1035, 61),
+pygame.Rect(1483, 683, 857, 82),
+pygame.Rect(1998, 429, 43, 265),
+pygame.Rect(2001, 417, 137, 33),
+pygame.Rect(1859, 303, 76, 305),
+pygame.Rect(1931, 305, 67, 21),
+pygame.Rect(1776, 398, 88, 78),
+pygame.Rect(1711, 85, 56, 52),
+pygame.Rect(1061, 176, 152, 472),
+pygame.Rect(1431, -9, 55, 403),
+pygame.Rect(1605, 237, 63, 30),
+pygame.Rect(1486, 375, 94, 27),
+pygame.Rect(1665, 236, 12, 169),
+pygame.Rect(1434, 391, 35, 113),
+pygame.Rect(1357, 459, 80, 39),
+pygame.Rect(1581, 375, 11, 27),
+pygame.Rect(672, 301, 132, 364),
+pygame.Rect(675, 212, 128, 90)]
+# win zone isnt working and i cant fix it so just gonna do this
+lv5win_zone = (445, 459, 69, 194)
 #misc
 camx = 0
 camy = 0
@@ -307,12 +365,12 @@ while running:
                 
     #level switching
     if change_level:
-        if level >= 1 and level <= 4:
+        if level >= 1 and level <= 5:
             platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
-        elif level > 4:
-            level = 4
+        elif level > 5:
+            level = 5
             print("no more levels")
         else:
             print("no more levels")
@@ -420,6 +478,10 @@ while running:
     #draws platfroms and shit
 
     pygame.draw.rect(world_surf, "green", win_zone)
+    # cant figure out why winzone doesent spawn so just gonna do this
+    if level == 5:
+        pygame.draw.rect(world_surf, "green", lv5win_zone)
+
     for boxes in killboxes:
         pygame.draw.rect(world_surf, (100,20,20), boxes)
     for platform in platforms:
@@ -508,7 +570,7 @@ while running:
     pygame.draw.rect(world_surf, (67, 255, 255), (playerx - PLAYER_WIDTH // 2, playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT))
 
     #checks for win
-    win = pygame.Rect(player_rect).colliderect(win_zone)
+    win = pygame.Rect(player_rect).colliderect(win_zone) or pygame.Rect(player_rect).colliderect(lv5win_zone)
     if win:
         won()
 
