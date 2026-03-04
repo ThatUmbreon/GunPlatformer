@@ -570,7 +570,9 @@ while running:
     pygame.draw.rect(world_surf, (67, 255, 255), (playerx - PLAYER_WIDTH // 2, playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT))
 
     #checks for win
-    win = pygame.Rect(player_rect).colliderect(win_zone) or pygame.Rect(player_rect).colliderect(lv5win_zone)
+    win = pygame.Rect(player_rect).colliderect(win_zone)
+    if level == 5:
+        win = pygame.Rect(player_rect).colliderect(lv5win_zone)
     if win:
         won()
 
