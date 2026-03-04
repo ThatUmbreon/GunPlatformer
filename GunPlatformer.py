@@ -122,8 +122,8 @@ def getFile(level : int) -> str:
             File = "levels/level4"
         case 5:
             File = "levels/level5"
-        case _:
-            File = ""
+        case 6:
+            File = "levels/level6"
     return File
 
 def print_at_end(title, list):
@@ -211,6 +211,7 @@ deleting = False
 change_level = True
 win_zone = (WIDTH-100, 0, 100, HEIGHT)
 jump_zones = []
+pink_orbs = []
 
 level = int(1)
 level0 = []
@@ -337,6 +338,76 @@ pygame.Rect(672, 301, 132, 364),
 pygame.Rect(675, 212, 128, 90)]
 # win zone isnt working and i cant fix it so just gonna do this
 lv5win_zone = (445, 459, 69, 194)
+lv6win_zone = (1397, 84, 17, 63)
+
+level6 = [pygame.Rect(1, 989, 33, 8),
+pygame.Rect(39, 651, 104, 33),
+pygame.Rect(286, 626, 5, 100),
+pygame.Rect(292, 737, 17, 10),
+pygame.Rect(285, 726, 4, 23),
+pygame.Rect(286, 813, 6, 60),
+pygame.Rect(286, 872, 6, 125),
+pygame.Rect(291, 988, 10, 5),
+pygame.Rect(285, 795, 5, 20),
+pygame.Rect(288, 798, 4, 16),
+pygame.Rect(286, 790, 6, 10),
+pygame.Rect(419, 988, 55, 7),
+pygame.Rect(1508, 996, 108, 7),
+pygame.Rect(1487, 700, 15, 6),
+pygame.Rect(1441, 917, 19, 3),
+pygame.Rect(439, 736, 34, 14),
+pygame.Rect(493, 134, 58, 12)
+]
+
+level6_kill = [pygame.Rect(55, 754, 36, 239),
+pygame.Rect(90, 827, 53, 165),
+pygame.Rect(140, 945, 57, 47),
+pygame.Rect(192, 983, 62, 7),
+pygame.Rect(142, 659, 71, 10),
+pygame.Rect(214, 442, 13, 280),
+pygame.Rect(278, 312, 7, 676),
+pygame.Rect(250, 982, 32, 10),
+pygame.Rect(165, 312, 13, 236),
+pygame.Rect(174, 311, 106, 15),
+pygame.Rect(39, 467, 126, 80),
+pygame.Rect(-1, 203, 113, 145),
+pygame.Rect(416, 200, 14, 611),
+pygame.Rect(283, 611, 74, 12),
+pygame.Rect(417, 16, 12, 187),
+pygame.Rect(-6, -16, 118, 224),
+pygame.Rect(166, 239, 119, 75),
+pygame.Rect(284, 237, 42, 10),
+pygame.Rect(111, -3, 318, 140),
+pygame.Rect(-5, 674, 44, 5),
+pygame.Rect(353, 427, 64, 10),
+pygame.Rect(348, 707, 69, 5),
+pygame.Rect(367, 711, 52, 101),
+pygame.Rect(367, 812, 63, 121),
+pygame.Rect(368, 930, 11, 23),
+pygame.Rect(320, 853, 48, 20),
+pygame.Rect(280, 753, 36, 22),
+pygame.Rect(410, 804, 20, 18),
+pygame.Rect(369, 977, 8, 24),
+pygame.Rect(374, 942, 1151, 6),
+pygame.Rect(376, 930, 1147, 14),
+pygame.Rect(1516, 604, 13, 342),
+pygame.Rect(1516, 539, 11, 68),
+pygame.Rect(1469, 374, 8, 320),
+pygame.Rect(1469, 263, 7, 111),
+pygame.Rect(1470, 228, 4, 35),
+pygame.Rect(1420, 203, 7, 620),
+pygame.Rect(1420, -21, 7, 227),
+pygame.Rect(1425, -11, 145, 165),
+pygame.Rect(1516, 150, 10, 316),
+pygame.Rect(1570, -10, 7, 1008),
+pygame.Rect(486, 431, 13, 503),
+pygame.Rect(489, 158, 10, 174),
+pygame.Rect(489, 151, 935, 9),
+pygame.Rect(398, -40, 282, 80),
+pygame.Rect(422, 764, 68, 170),
+pygame.Rect(420, 31, 1008, 48),
+pygame.Rect(653, -64, 818, 117)
+]
 #misc
 camx = 0
 camy = 0
@@ -392,12 +463,12 @@ while running:
 
     #level switching
     if change_level:
-        if level >= 1 and level <= 5:
+        if level >= 1 and level <= 6:
             platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
-        elif level > 5:
-            level = 5
+        elif level > 6:
+            level = 6
             print("no more levels")
         else:
             print("no more levels")
@@ -502,12 +573,16 @@ while running:
     # cant figure out why winzone doesent spawn so just gonna do this
     if level == 5:
         pygame.draw.rect(world_surf, "green", lv5win_zone)
+    if level == 6:
+        pygame.draw.rect(world_surf, "green", lv6win_zone)
     for boxes in killboxes:
         pygame.draw.rect(world_surf, (100,20,20), boxes)
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
     for zones in jump_zones:
         pygame.draw.rect(world_surf, (90, 250, 180), zones)
+    for orbs in pink_orbs:
+        pygame.draw.circle(world_surf, (255, 150, 200), orbs, 30)
     for objects in custom_rects:
         pygame.draw.rect(world_surf, "blue", objects)
     pygame.draw.rect(world_surf, "yellow", (respawn_point[0] - 20, respawn_point[1] - 20, 40, 40))
@@ -515,20 +590,30 @@ while running:
 
         #creator mode!
     if creator_mode:
+
+        if keys[pygame.K_t]:
+            new_orb = mouse_pos[0]+camx, mouse_pos[1]+camy
+            pink_orbs.append(new_orb)
+
         if variable67 != (0,0):
             pygame.draw.circle(world_surf, "red", (variable67), 10)
+
         if variable69 != (0,0):
             pygame.draw.circle(world_surf, "purple", (variable69), 10)
+
         if keys[pygame.K_q]:
-                variable67 = mouse_pos[0]+camx, mouse_pos[1]+camy
-                changing_var = True
+            variable67 = mouse_pos[0]+camx, mouse_pos[1]+camy
+            changing_var = True
+
         elif keys[pygame.K_e]:
             variable69 = mouse_pos[0]+camx, mouse_pos[1]+camy
             changing_var = True
+
         elif keys[pygame.K_m]:
             respawn_point = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_BACKSPACE]:
             deleting = True
+
         if deleting:
             for platform in platforms:
                 if platform.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
@@ -539,6 +624,9 @@ while running:
             for zones in jump_zones:
                 if zones.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
                     jump_zones.remove(zones)
+            for orbs in pink_orbs:
+                if orbs.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
+                    pink_orbs.remove(orbs)
             win_rect = pygame.Rect(win_zone[0], win_zone[1], win_zone[2], win_zone[3])
             if win_rect.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
                 win_zone = (0,0,0,0)
@@ -605,6 +693,8 @@ while running:
     win = pygame.Rect(player_rect).colliderect(win_zone)
     if level == 5:
         win = pygame.Rect(player_rect).colliderect(lv5win_zone)
+    if level == 6:
+        win = pygame.Rect(player_rect).colliderect(lv6win_zone)
     if win:
         won()
 
