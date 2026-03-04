@@ -77,7 +77,7 @@ def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rec
         file.write("win\n")
         file.write(f"{winZone}\n")
 
-def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,int],tuple[int,int,int,int]]:
+def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,int],pygame.Rect]:
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
@@ -106,7 +106,7 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,
                     pass
     except:
         pass
-    return boxes,killboxes,spawnpoint,winzone
+    return boxes,killboxes,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3])
 #this works, I tested it
 
 def getFile(level : int) -> str:
@@ -726,6 +726,7 @@ print_at_end("jump Zone", jump_zones)
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
