@@ -81,33 +81,36 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
-    spawnpoint : tuple[int,int]
-    winzone : tuple[int,int,int,int]
-    with open(File, 'r') as file:
-        for line in file:
-            try:
-                line = line[:-1]
-                if line=="kill":
-                    mode = 'kill'
-                elif line =="spawn":
-                    mode = 'spawn'
-                elif line =="win":
-                    mode = 'win'
-                elif mode=='boxes':
-                    boxes.append(eval(line))
-                elif mode=='kill':
-                    killboxes.append(eval(line))
-                elif mode=='spawn':
-                    spawnpoint=eval(line)
-                elif mode=='win':
-                    winzone=eval(line)
-            except:
-                pass
+    spawnpoint : tuple[int,int] = (0,0)
+    winzone : tuple[int,int,int,int] = (0,0,0,0)
+    try:
+        with open(File, 'r') as file:
+            for line in file:
+                try:
+                    line = line[:-1]
+                    if line=="kill":
+                        mode = 'kill'
+                    elif line =="spawn":
+                        mode = 'spawn'
+                    elif line =="win":
+                        mode = 'win'
+                    elif mode=='boxes':
+                        boxes.append(eval(line))
+                    elif mode=='kill':
+                        killboxes.append(eval(line))
+                    elif mode=='spawn':
+                        spawnpoint=eval(line)
+                    elif mode=='win':
+                        winzone=eval(line)
+                except:
+                    pass
+    except:
+        pass
     return boxes,killboxes,spawnpoint,winzone
 #this works, I tested it
 
 def getFile(level : int) -> str:
-    File : str = None
+    File : str = ""
     match level:
         case 1:
             File = "levels/level1"
@@ -120,7 +123,7 @@ def getFile(level : int) -> str:
         case 5:
             File = "levels/level5"
         case _:
-            File = None
+            File = ""
     return File
 
 def print_at_end(title, list):
@@ -300,7 +303,7 @@ while running:
     if change_level:
         if level >= 1 and level <= 4:
             platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
-            if getFile(level)==None:
+            if getFile(level)=="":
                 level -=1
         elif level > 4:
             level = 4
@@ -527,6 +530,7 @@ print_at_end("Win Zone", win_zone)
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
