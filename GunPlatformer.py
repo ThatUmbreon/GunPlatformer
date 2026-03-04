@@ -66,7 +66,7 @@ def won():
     change_level = True
 
 #I have tested this, this works
-def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : tuple[int,int,int,int]) -> None:
+def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
     with open(File, 'w') as file:
         for i in boxes:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
@@ -76,7 +76,7 @@ def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rec
         file.write("spawn\n")
         file.write(f"{spawnPoint}\n")
         file.write("win\n")
-        file.write(f"{winZone}\n")
+        file.write(f"{(winZone.x,winZone.y,winZone.w,winZone.h)}\n")
 
 def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,int],pygame.Rect]:
     mode = 'boxes'
@@ -727,11 +727,9 @@ while running:
                 jump_zones.append(new_platform)
                 reset_customs()
 
-
-
-
         if keys[pygame.K_6] and keys[pygame.K_7]:
-            fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_zone))
+            fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_rect))
+            
         bullets = 6000
         if keys[pygame.K_w]:
             playery -= 20
@@ -793,6 +791,7 @@ print_at_end("jump Zone", jump_zones)
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
