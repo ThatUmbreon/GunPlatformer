@@ -131,6 +131,12 @@ def print_at_end(title, list):
     print(title)
     print(evil_list)
 
+def reset_customs():
+    global variable67, variable69, custom_rects
+    variable67 = (0, 0)
+    variable69 = (0, 0)
+    custom_rects = []
+
 # screen
 WIDTH = 1200
 HEIGHT = 800
@@ -460,15 +466,18 @@ while running:
             custom_rects.append(new_platform)
             if keys[pygame.K_z]:
                 platforms.append(new_platform)
+                reset_customs()
             elif keys[pygame.K_l]:
                 win_zone = new_platform
+                reset_customs()
             elif keys[pygame.K_g]:
                 killboxes.append(new_platform)
+                reset_customs()
             elif keys[pygame.K_j]:
                 jump_zones.append(new_platform)
-            variable67 = (0, 0)
-            variable69 = (0, 0)
-            custom_rects = []
+                reset_customs()
+
+
 
 
         if keys[pygame.K_6] and keys[pygame.K_7]:
