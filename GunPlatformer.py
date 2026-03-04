@@ -137,6 +137,30 @@ def reset_customs():
     variable69 = (0, 0)
     custom_rects = []
 
+def collisions(rect_list):
+    horizontal_blocked = False
+    vertical_blocked = False
+    for anything in rect_list:
+        if pygame.Rect((playerx + ((player_xvel + walk) * dt / 4) - PLAYER_WIDTH // 2), playery - PLAYER_HEIGHT // 2,
+                       PLAYER_WIDTH, PLAYER_HEIGHT).colliderect(anything):
+            horizontal_blocked = True
+        if pygame.Rect(playerx - PLAYER_WIDTH // 2, playery + (player_yvel * dt / 4) - PLAYER_HEIGHT // 2, PLAYER_WIDTH,
+                       PLAYER_HEIGHT).colliderect(anything):
+            vertical_blocked = True
+        if pygame.Rect((playerx + ((player_xvel + walk) * dt / 4) - PLAYER_WIDTH // 2),
+                       playery + ((player_yvel + GRAVITY) * dt / 4) - PLAYER_HEIGHT // 2, PLAYER_WIDTH,
+                       PLAYER_HEIGHT).colliderect(anything) and not (
+                pygame.Rect((playerx + ((player_xvel + walk) * dt / 4) - PLAYER_WIDTH // 2),
+                            playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT).colliderect(
+                        anything) or pygame.Rect(playerx - PLAYER_WIDTH // 2,
+                                                 playery + (player_yvel * dt / 4) - PLAYER_HEIGHT // 2, PLAYER_WIDTH,
+                                                 PLAYER_HEIGHT).colliderect(anything)):
+            horizontal_blocked = True
+            vertical_blocked = True
+
+    return(horizontal_blocked, vertical_blocked)
+
+
 # screen
 WIDTH = 1200
 HEIGHT = 800
@@ -171,6 +195,7 @@ shoot = False
 hold = False
 bullets = 6
 magazine_size= 6
+
 
 #creator mode variables
 creator_mode = True
@@ -317,6 +342,8 @@ camx = 0
 camy = 0
 death_time = 0
 dying = False
+variable671 = (0,0)
+variable691 = (0,0)
 
 #file loading
 try:
@@ -362,7 +389,7 @@ while running:
             elif event.key == pygame.K_F2:
                 level += 1
                 change_level = True
-                
+
     #level switching
     if change_level:
         if level >= 1 and level <= 5:
@@ -419,21 +446,16 @@ while running:
     # walking
     walk = ((keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])) * PLAYER_SPEED
 
-    # untranslated collision detection and response
-    # i use quartersteps (check for collisions 4 times per frame) to make it more accurate and also because thats what super mario 64 does
-    # also im checking for horizontal and vertical collisions separately, so that you can slide along walls and not get stuck on corners
-    # that corner bug had me stumped for a while for platformergame, so im taking no chances
+    # collisions
     for i in range(4):
-        horizontal_blocked = False
-        vertical_blocked = False
-        for platform in platforms:
-            if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
-                horizontal_blocked = True
-            if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform):
-                vertical_blocked = True
-            if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery+((player_yvel+GRAVITY)*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) and not (pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform) or pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(platform)):
-                horizontal_blocked = True
-                vertical_blocked = True
+        horizontal_blocked = collisions(platforms)[0]
+        vertical_blocked = collisions(platforms)[1]
+
+        refill1 = collisions(jump_zones)[0]
+        refill2 = collisions(jump_zones)[1]
+        if refill1 or refill2:
+            bullets = magazine_size
+
 
 
         #actually moving
@@ -476,17 +498,20 @@ while running:
 
 
     #draws platfroms and shit
-
     pygame.draw.rect(world_surf, "green", win_zone)
     # cant figure out why winzone doesent spawn so just gonna do this
     if level == 5:
         pygame.draw.rect(world_surf, "green", lv5win_zone)
-
     for boxes in killboxes:
         pygame.draw.rect(world_surf, (100,20,20), boxes)
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
+    for zones in jump_zones:
+        pygame.draw.rect(world_surf, (90, 250, 180), zones)
+    for objects in custom_rects:
+        pygame.draw.rect(world_surf, "blue", objects)
     pygame.draw.rect(world_surf, "yellow", (respawn_point[0] - 20, respawn_point[1] - 20, 40, 40))
+
 
         #creator mode!
     if creator_mode:
@@ -496,8 +521,10 @@ while running:
             pygame.draw.circle(world_surf, "purple", (variable69), 10)
         if keys[pygame.K_q]:
                 variable67 = mouse_pos[0]+camx, mouse_pos[1]+camy
+                changing_var = True
         elif keys[pygame.K_e]:
             variable69 = mouse_pos[0]+camx, mouse_pos[1]+camy
+            changing_var = True
         elif keys[pygame.K_m]:
             respawn_point = mouse_pos[0]+camx, mouse_pos[1]+camy
         elif keys[pygame.K_BACKSPACE]:
@@ -509,6 +536,9 @@ while running:
             for boxes in killboxes:
                 if boxes.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
                     killboxes.remove(boxes)
+            for zones in jump_zones:
+                if zones.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
+                    jump_zones.remove(zones)
             win_rect = pygame.Rect(win_zone[0], win_zone[1], win_zone[2], win_zone[3])
             if win_rect.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
                 win_zone = (0,0,0,0)
@@ -524,7 +554,10 @@ while running:
         except:
             pass
         if variable67 != (0,0) and variable69 != (0,0):
-            new_platform = calc_rects(variable67, variable69)
+            if changing_var:
+                new_platform = calc_rects(variable67, variable69)
+                changing_var = False
+            custom_rects.clear()
             custom_rects.append(new_platform)
             if keys[pygame.K_z]:
                 platforms.append(new_platform)
@@ -555,8 +588,7 @@ while running:
             playerx += 20
 
 
-        for objects in custom_rects:
-            pygame.draw.rect(world_surf, "blue", new_platform)
+
     #draws bullets
     for bullet in bullet_list:
         pygame.draw.circle(world_surf, "yellow", bullet[0], 5)
@@ -600,6 +632,7 @@ print_at_end("Platforms", platforms)
 print_at_end("Killboxes", killboxes)
 print_at_end("Respawn Point", respawn_point)
 print_at_end("Win Zone", win_zone)
+print_at_end("jump Zone", jump_zones)
 # close the game when we close it
 
 pygame.quit()
