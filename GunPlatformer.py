@@ -2,6 +2,7 @@
 import pygame
 from math import cos, sin, acos, asin, pi
 import random
+from enum import Enum
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -124,6 +125,8 @@ def getFile(level : int) -> str:
             File = "levels/level5"
         case 6:
             File = "levels/level6"
+        case _:
+            File = ''
     return File
 
 def print_at_end(title, list):
@@ -137,29 +140,80 @@ def reset_customs():
     variable69 = (0, 0)
     custom_rects = []
 
-def collisions(rect_list):
-    horizontal_blocked = False
-    vertical_blocked = False
+def collisions(rect_list,x,y,x_vel,y_vel,width,height,gravity):
+    hblock = False
+    vblock = False
     for anything in rect_list:
-        if pygame.Rect((playerx + ((player_xvel + walk) * dt / 4) - PLAYER_WIDTH // 2), playery - PLAYER_HEIGHT // 2,
-                       PLAYER_WIDTH, PLAYER_HEIGHT).colliderect(anything):
-            horizontal_blocked = True
-        if pygame.Rect(playerx - PLAYER_WIDTH // 2, playery + (player_yvel * dt / 4) - PLAYER_HEIGHT // 2, PLAYER_WIDTH,
-                       PLAYER_HEIGHT).colliderect(anything):
-            vertical_blocked = True
-        if pygame.Rect((playerx + ((player_xvel + walk) * dt / 4) - PLAYER_WIDTH // 2),
-                       playery + ((player_yvel + GRAVITY) * dt / 4) - PLAYER_HEIGHT // 2, PLAYER_WIDTH,
-                       PLAYER_HEIGHT).colliderect(anything) and not (
-                pygame.Rect((playerx + ((player_xvel + walk) * dt / 4) - PLAYER_WIDTH // 2),
-                            playery - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT).colliderect(
-                        anything) or pygame.Rect(playerx - PLAYER_WIDTH // 2,
-                                                 playery + (player_yvel * dt / 4) - PLAYER_HEIGHT // 2, PLAYER_WIDTH,
-                                                 PLAYER_HEIGHT).colliderect(anything)):
-            horizontal_blocked = True
-            vertical_blocked = True
+        if pygame.Rect((x + (x_vel * dt / 4) - width // 2), y - height // 2,
+                       width, height).colliderect(anything):
+            hblock = True
+        if pygame.Rect(x - width // 2, y + (y_vel * dt / 4) - height // 2, width,
+                       height).colliderect(anything):
+            vblock = True
+        if pygame.Rect((x + (x_vel * dt / 4) - width // 2),
+                       y + ((y_vel + gravity) * dt / 4) - height // 2, width,
+                       height).colliderect(anything) and not (
+                pygame.Rect((x + (x_vel * dt / 4) - width // 2),
+                            y - height // 2, width, height).colliderect(
+                        anything) or pygame.Rect(x - width // 2,
+                                                 y + (y_vel * dt / 4) - height // 2, width,height).colliderect(anything)):
+            hblock = True
+            vblock = True
 
-    return(horizontal_blocked, vertical_blocked)
+    return hblock, vblock
 
+
+class EnemyVariant(Enum):
+    DEFAULT=0 # stupid dumbass just walks in a straight line and turns around when they hit a wall, they can't even avoid falling off platforms
+    SMART=1 # default but they turn around at the edge of platforms
+    JUMP=2 # jumps when it hits a wall, but doesn't turn around
+    LARGE=3 # default but slower, larger, and bulkier
+    FLY=4 # goes back and forth between two points in the sky
+    TRACK=5 # walks towards the player
+    SHOOT=6 # immobile, shoots towards the player
+    FLY_TRACK=7 # flies towards the player
+    FLY_SHOOT=8 # flies between two points in the sky and shoots at the player
+    FIGHTER_JET=9 # flies and shoots at the player
+    BOMB=10 # explodes on death
+    BOMBER=11 # immobile, throws bombs at the player
+    BOMBER_JET=12 # flies above the player and drops bombs
+
+class Enemy:
+    def __init__(self,pos:list[float,float],variant:EnemyVariant):
+        self.pos = pos
+        self.y_vel = 0
+        self.variant = variant
+        self.hp = 10
+        self.facing_right = False
+        self.size = 1
+        self.speed = 1
+        self.gravity = True
+        self.detect_ledge = False
+        self.jump = False
+        self.track = False
+        self.shoot = False
+        self.bomb = False
+    def main(self):
+        self.move()
+        self.draw()
+    def draw(self):
+        pygame.draw.rect(world_surf, (255, 167, 67),
+                         (self.pos[0] - self.size*ENEMY_WIDTH // 2, self.pos[1] - self.size*ENEMY_HEIGHT // 2, self.size*ENEMY_WIDTH, self.size*ENEMY_HEIGHT))
+    def move(self):
+        self.y_vel += self.gravity*GRAVITY*dt
+        for i in range(4):
+            block = collisions(platforms,self.pos[0],self.pos[1],self.speed*ENEMY_SPEED,self.y_vel,self.size*ENEMY_WIDTH,self.size*ENEMY_HEIGHT,GRAVITY)
+            if block[1]:
+                if self.y_vel<=0 and (block[0] or (self.detect_ledge and False)):
+                    if self.jump:
+                        self.y_vel = ENEMY_JUMP_HEIGHT
+                    else:
+                        self.facing_right = not self.facing_right
+                else:
+                    self.pos[0] += self.speed*ENEMY_SPEED*dt/4*(2*self.facing_right-1)
+                self.y_vel = 0
+            else:
+                self.pos[1] += self.y_vel*dt/4
 
 # screen
 WIDTH = 1200
@@ -186,6 +240,13 @@ player_yvel = 0
 DRAG = 0.9
 GRAVITY = 0.75
 TERMINAL_VELOCITY = 15
+
+# enemy variables
+enemy_list = []
+ENEMY_SPEED = 5
+ENEMY_WIDTH = 20
+ENEMY_HEIGHT = 20
+ENEMY_JUMP_HEIGHT = 15
 
 # gun variables
 BULLET_SPEED = 10
@@ -505,6 +566,9 @@ while running:
         if bullet[0][0] < 0 or bullet[0][0] > WLW or bullet[0][1] < 0 or bullet[0][1] > WLH or any(pygame.Rect(bullet[0][0] - 5, bullet[0][1] - 5, 10, 10).colliderect(platform) for platform in platforms):
             bullet_list.remove(bullet)
 
+    for enemy in enemy_list:
+        enemy.main()
+
     # applies drag/friction
     player_xvel *= DRAG**dt
 
@@ -519,11 +583,11 @@ while running:
 
     # collisions
     for i in range(4):
-        horizontal_blocked = collisions(platforms)[0]
-        vertical_blocked = collisions(platforms)[1]
+        horizontal_blocked = collisions(platforms,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
+        vertical_blocked = collisions(platforms,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
 
-        refill1 = collisions(jump_zones)[0]
-        refill2 = collisions(jump_zones)[1]
+        refill1 = collisions(jump_zones,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
+        refill2 = collisions(jump_zones,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
         if refill1 or refill2:
             bullets = magazine_size
 
@@ -594,6 +658,9 @@ while running:
         if keys[pygame.K_t]:
             new_orb = mouse_pos[0]+camx, mouse_pos[1]+camy
             pink_orbs.append(new_orb)
+
+        if keys[pygame.K_KP_PLUS]:
+            enemy_list.append(Enemy([mouse_pos[0]+camx, mouse_pos[1]+camy],EnemyVariant.DEFAULT))
 
         if variable67 != (0,0):
             pygame.draw.circle(world_surf, "red", (variable67), 10)
