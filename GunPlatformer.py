@@ -583,11 +583,11 @@ while running:
 
     # collisions
     for i in range(4):
-        horizontal_blocked = collisions(platforms,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
-        vertical_blocked = collisions(platforms,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
+        horizontal_blocked = collisions(platforms,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
+        vertical_blocked = collisions(platforms,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
 
-        refill1 = collisions(jump_zones,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
-        refill2 = collisions(jump_zones,playerx,playery,player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
+        refill1 = collisions(jump_zones,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
+        refill2 = collisions(jump_zones,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
         if refill1 or refill2:
             bullets = magazine_size
 
