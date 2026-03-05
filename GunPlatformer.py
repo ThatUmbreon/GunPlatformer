@@ -219,6 +219,9 @@ class Enemy:
 WIDTH = 1200
 HEIGHT = 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.SCALED|pygame.RESIZABLE|pygame.FULLSCREEN|pygame.SRCALPHA)
+crosshair = pygame.image.load("assets/crosshair.png").convert_alpha()
+crosshair = pygame.transform.scale(crosshair,(32,32))
+pygame.mouse.set_cursor((16,16),crosshair)
 pygame.display.set_caption("GunPlatformer")
 
 #world varbs
