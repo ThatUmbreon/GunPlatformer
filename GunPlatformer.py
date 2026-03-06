@@ -695,7 +695,7 @@ while running:
                 if zones.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
                     jump_zones.remove(zones)
             for orbs in pink_orbs:
-                if orbs.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
+                if distance(orbs,(mouse_pos[0] + camx, mouse_pos[1] + camy)) < 30:
                     pink_orbs.remove(orbs)
             win_rect = pygame.Rect(win_zone[0], win_zone[1], win_zone[2], win_zone[3])
             if win_rect.collidepoint((mouse_pos[0]+camx, mouse_pos[1]+camy)):
