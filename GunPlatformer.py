@@ -75,22 +75,26 @@ def won():
     change_level = True
 
 #I have tested this, this works
-def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
+def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], water : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
     with open(File, 'w') as file:
         for i in boxes:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("kill\n")
         for i in killBoxes:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
+        file.write("water\n")
+        for i in water:
+            file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("spawn\n")
         file.write(f"{spawnPoint}\n")
         file.write("win\n")
         file.write(f"{(winZone.x,winZone.y,winZone.w,winZone.h)}\n")
 
-def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,int],pygame.Rect]:
+def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pygame.Rect],tuple[int,int],pygame.Rect]:
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
+    water : list[pygame.Rect] = []
     spawnpoint : tuple[int,int] = (0,0)
     winzone : tuple[int,int,int,int] = (0,0,0,0)
     try:
@@ -104,6 +108,8 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,
                         mode = 'spawn'
                     elif line =="win":
                         mode = 'win'
+                    elif line =="water":
+                        mode = 'water'
                     elif mode=='boxes':
                         boxes.append(eval(line))
                     elif mode=='kill':
@@ -112,11 +118,13 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect],tuple[int,
                         spawnpoint=eval(line)
                     elif mode=='win':
                         winzone=eval(line)
+                    elif mode=='water':
+                        water.append(eval(line))
                 except:
                     pass
     except:
         pass
-    return boxes,killboxes,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3])
+    return boxes,killboxes,water,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3])
 #this works, I tested it
 
 def getFile(level : int) -> str:
@@ -136,6 +144,8 @@ def getFile(level : int) -> str:
             File = "levels/level6"
         case 7:
             File = "levels/level7"
+        case _:
+            File = ""
     return File
 
 def print_at_end(title, list):
@@ -560,7 +570,7 @@ while running:
     #level switching
     if change_level:
         if level >= 1 and level <= 7:
-            platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
+            platforms,killboxes,water,respawn_point,win_zone = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
         elif level > 7:
@@ -569,19 +579,10 @@ while running:
         else:
             print("no more levels")
             level = 1
-        water = []
         reset()
         print(level)
 
     #spawning water
-    count = 0
-    if water == []:
-        for i in water_levels:
-            if water_levels[count] != 0 and level == count + 1:
-                water = water_levels[count]
-                break
-            else:
-                count += 1
 
     # get inputs
     keys = pygame.key.get_pressed()
@@ -806,7 +807,7 @@ while running:
                 reset_customs()
 
         if keys[pygame.K_6] and keys[pygame.K_7]:
-            fileWrite(getFile(level),platforms,killboxes,(int(respawn_point[0]), int(respawn_point[1]),win_rect))
+            fileWrite(getFile(level),platforms,killboxes,water,(int(respawn_point[0]), int(respawn_point[1]),win_rect))
             
         bullets = 6000
         if keys[pygame.K_w]:
@@ -872,6 +873,7 @@ print_at_end("water", water)
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
