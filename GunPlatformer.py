@@ -4,6 +4,9 @@ from math import cos, sin, acos, asin, pi
 import random
 from enum import Enum
 import os
+
+from pygame.examples.midi import null_key
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -278,12 +281,15 @@ jump_zones = []
 water = []
 pink_orbs = []
 
+
 level = int(1)
 level0 = []
 level1 = [pygame.Rect(96, 498, 577, 107),
 pygame.Rect(770, 494, 356, 118),
 pygame.Rect(1327, 492, 373, 125),
 pygame.Rect(1199, -39, 54, 540),]
+
+level1water = [pygame.Rect(96, 498, 677, 107)]
 
 level2 = [pygame.Rect(81, 529, 492, 65),
 pygame.Rect(1136, 531, 345, 109),
@@ -480,6 +486,15 @@ death_time = 0
 dying = False
 variable671 = (0,0)
 variable691 = (0,0)
+water_levels = [
+    level1water,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+]
 
 #file loading
 try:
@@ -539,8 +554,19 @@ while running:
         else:
             print("no more levels")
             level = 1
+        water = []
         reset()
         print(level)
+
+    #spawning water
+    count = 0
+    if water == []:
+        for i in water_levels:
+            if water_levels[count] != 0 and level == count + 1:
+                water = water_levels[count]
+                break
+            else:
+                count += 1
 
     # get inputs
     keys = pygame.key.get_pressed()
@@ -720,6 +746,9 @@ while running:
             for zones in jump_zones:
                 if zones.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
                     jump_zones.remove(zones)
+            for zone in water:
+                if zone.collidepoint((mouse_pos[0] + camx, mouse_pos[1] + camy)):
+                    water.remove(zone)
             for orbs in pink_orbs:
                 if distance(orbs,(mouse_pos[0] + camx, mouse_pos[1] + camy)) < 30:
                     pink_orbs.remove(orbs)
@@ -820,6 +849,7 @@ print_at_end("Killboxes", killboxes)
 print_at_end("Respawn Point", respawn_point)
 print_at_end("Win Zone", win_zone)
 print_at_end("jump Zone", jump_zones)
+print_at_end("water", water)
 # close the game when we close it
 
 pygame.quit()
