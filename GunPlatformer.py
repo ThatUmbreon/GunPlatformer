@@ -26,11 +26,17 @@ def distance(p1, p2):
     return ((p1[0]-p2[0])**2+(p1[1]-p2[1])**2)**0.5
 
 def thatcircleshit(radius, center, point, addangle=0):
+    global player_yvel, player_xvel, underwater
     '''what even is this shit.
     it calculates the point on the circumference of a circle with a given radius and center, that is in the direction of the point argument, with an optional angle added to it.
     like seriously what do you even call that'''
-    playerx = radius*cos(addangle+acos((point[0]-center[0])/(distance(center,point))))
-    playery = radius*sin(addangle+asin((point[1]-center[1])/(distance(center,point))))
+    #use hashes guys
+    if underwater == True:
+        playerx = radius*cos(addangle+acos((point[0]-center[0])/(distance(center,point)))) + player_xvel/2
+        playery = radius*sin(addangle+asin((point[1]-center[1])/(distance(center,point)))) + player_yvel/2.5
+    else:
+        playerx = radius * cos(addangle + acos((point[0] - center[0]) / (distance(center, point))))
+        playery = radius * sin(addangle + asin((point[1] - center[1]) / (distance(center, point))))
     return playerx, playery
 
 def write(msg, pos, size, color):
@@ -690,13 +696,13 @@ while running:
         check2 = collisions(water, playerx, playery, walk + player_xvel, player_yvel, PLAYER_WIDTH, PLAYER_HEIGHT, GRAVITY)[1]
         if check1 or check2:
             underwater = True
-            GRAVITY = 0.4
-            DRAG = 0.995
-            RECOIL = 15
+            GRAVITY = 0.5
+            DRAG = 0.93
+            RECOIL = 14
             PLAYER_SPEED = 3
-            TERMINAL_VELOCITY = 25
+            TERMINAL_VELOCITY = 30
             if player_yvel > min(TERMINAL_VELOCITY, 2.5):
-                player_yvel -= 0.1
+                player_yvel -= 0.15
         else:
             underwater = False
             TERMINAL_VELOCITY = 15
