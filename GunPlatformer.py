@@ -134,8 +134,8 @@ def getFile(level : int) -> str:
             File = "levels/level5"
         case 6:
             File = "levels/level6"
-        case _:
-            File = ''
+        case 7:
+            File = "levels/level7"
     return File
 
 def print_at_end(title, list):
@@ -414,6 +414,7 @@ pygame.Rect(675, 212, 128, 90)]
 # win zone isnt working and i cant fix it so just gonna do this
 lv5win_zone = (445, 459, 69, 194)
 lv6win_zone = (1397, 84, 17, 63)
+lv7win_zone = (5685, 481, 153, 105)
 
 level6 = [pygame.Rect(1, 989, 33, 8),
 pygame.Rect(39, 651, 104, 33),
@@ -490,6 +491,16 @@ death_time = 0
 dying = False
 variable671 = (0,0)
 variable691 = (0,0)
+level7_water = [pygame.Rect(-8, -7, 951, 1022),
+pygame.Rect(937, -8, 3389, 943),
+pygame.Rect(4304, -1, 1272, 469),
+pygame.Rect(4302, 548, 630, 458),
+pygame.Rect(4642, 462, 2194, 406),
+pygame.Rect(5104, 860, 1726, 156),
+pygame.Rect(5563, -9, 1275, 488),
+pygame.Rect(4199, 934, 119, 66)
+]
+
 water_levels = [
     0,
     0,
@@ -497,7 +508,7 @@ water_levels = [
     0,
     0,
     0,
-    0
+    level7_water
 ]
 
 #file loading
@@ -548,12 +559,12 @@ while running:
 
     #level switching
     if change_level:
-        if level >= 1 and level <= 6:
+        if level >= 1 and level <= 7:
             platforms,killboxes,respawn_point,win_zone = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
-        elif level > 6:
-            level = 6
+        elif level > 7:
+            level = 7
             print("no more levels")
         else:
             print("no more levels")
@@ -678,6 +689,8 @@ while running:
         pygame.draw.rect(world_surf, "green", lv5win_zone)
     if level == 6:
         pygame.draw.rect(world_surf, "green", lv6win_zone)
+    if level == 7:
+        pygame.draw.rect(world_surf, "green", lv7win_zone)
     for boxes in killboxes:
         pygame.draw.rect(world_surf, (100,20,20), boxes)
     for platform in platforms:
@@ -825,6 +838,8 @@ while running:
         win = pygame.Rect(player_rect).colliderect(lv5win_zone)
     if level == 6:
         win = pygame.Rect(player_rect).colliderect(lv6win_zone)
+    if level == 7:
+        win = pygame.Rect(player_rect).colliderect(lv7win_zone)
     if win:
         won()
 
