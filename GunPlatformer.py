@@ -275,6 +275,7 @@ deleting = False
 change_level = True
 win_zone = (WIDTH-100, 0, 100, HEIGHT)
 jump_zones = []
+water = []
 pink_orbs = []
 
 level = int(1)
@@ -525,6 +526,7 @@ while running:
                 level += 1
                 change_level = True
 
+
     #level switching
     if change_level:
         if level >= 1 and level <= 6:
@@ -596,6 +598,8 @@ while running:
 
 
 
+
+
         #actually moving
         if horizontal_blocked:
             player_xvel = 0
@@ -638,6 +642,8 @@ while running:
     #draws platfroms and shit
     pygame.draw.rect(world_surf, "green", win_zone)
     # cant figure out why winzone doesent spawn so just gonna do this
+    for zone in water:
+        pygame.draw.rect(world_surf, (0, 0, 170), zone)
     if level == 5:
         pygame.draw.rect(world_surf, "green", lv5win_zone)
     if level == 6:
@@ -649,17 +655,37 @@ while running:
     for zones in jump_zones:
         pygame.draw.rect(world_surf, (90, 250, 180), zones)
     for orbs in pink_orbs:
-        pygame.draw.circle(world_surf, (255, 150, 200), orbs, 30)
+        pygame.draw.circle(world_surf, (160, 20, 50), orbs, 30)
     for objects in custom_rects:
         pygame.draw.rect(world_surf, "blue", objects)
     pygame.draw.rect(world_surf, "yellow", (respawn_point[0] - 20, respawn_point[1] - 20, 40, 40))
 
+    #check if underwater
+    for i in range(4):
+        check1 = collisions(water, playerx, playery, walk + player_xvel, player_yvel, PLAYER_WIDTH, PLAYER_HEIGHT, GRAVITY)[0]
+        check2 = collisions(water, playerx, playery, walk + player_xvel, player_yvel, PLAYER_WIDTH, PLAYER_HEIGHT, GRAVITY)[1]
+        if check1 or check2:
+            underwater = True
+            GRAVITY = 0.4
+            DRAG = 0.995
+            RECOIL = 15
+            PLAYER_SPEED = 3
+            TERMINAL_VELOCITY = 25
+            if player_yvel > min(TERMINAL_VELOCITY, 2.5):
+                player_yvel -= 0.1
+        else:
+            underwater = False
+            TERMINAL_VELOCITY = 15
+            GRAVITY = 0.75
+            DRAG = 0.9
+            RECOIL = 20
+            PLAYER_SPEED = 5
 
         #creator mode!
     if creator_mode:
 
         if keys[pygame.K_t]:
-            new_orb = mouse_pos[0]+camx, mouse_pos[1]+camy
+            new_orb = (mouse_pos[0]+camx, mouse_pos[1]+camy)
             pink_orbs.append(new_orb)
 
         if keys[pygame.K_KP_PLUS]:
@@ -728,6 +754,9 @@ while running:
                 reset_customs()
             elif keys[pygame.K_j]:
                 jump_zones.append(new_platform)
+                reset_customs()
+            elif keys[pygame.K_1]:
+                water.append(new_platform)
                 reset_customs()
 
         if keys[pygame.K_6] and keys[pygame.K_7]:
