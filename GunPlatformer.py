@@ -30,7 +30,7 @@ def thatcircleshit(radius, center, point, addangle=0):
     '''what even is this shit.
     it calculates the point on the circumference of a circle with a given radius and center, that is in the direction of the point argument, with an optional angle added to it.
     like seriously what do you even call that'''
-    #use hashes guys
+    #move this shit to for bullet in bullets list or whaterv, it bugs out when bullets leave the water or enter it.
     if underwater == True:
         playerx = radius*cos(addangle+acos((point[0]-center[0])/(distance(center,point)))) + player_xvel/2
         playery = radius*sin(addangle+asin((point[1]-center[1])/(distance(center,point)))) + player_yvel/2.5
@@ -75,12 +75,15 @@ def won():
     change_level = True
 
 #I have tested this, this works
-def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], water : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
+def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], jumpZones : list[pygame.Rect], water : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
     with open(File, 'w') as file:
         for i in boxes:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("kill\n")
         for i in killBoxes:
+            file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
+        file.write("jump\n")
+        for i in jumpZones:
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("water\n")
         for i in water:
@@ -94,6 +97,7 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
+    jump_zones : list[pygame.Rect] = []
     water : list[pygame.Rect] = []
     spawnpoint : tuple[int,int] = (0,0)
     winzone : tuple[int,int,int,int] = (0,0,0,0)
@@ -104,6 +108,8 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
                     line = line[:-1]
                     if line=="kill":
                         mode = 'kill'
+                    elif line=="jump":
+                        mode = 'jump'
                     elif line =="spawn":
                         mode = 'spawn'
                     elif line =="win":
@@ -114,6 +120,8 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
                         boxes.append(eval(line))
                     elif mode=='kill':
                         killboxes.append(eval(line))
+                    elif mode=='jump':
+                        jump_zones.append(eval(line))
                     elif mode=='spawn':
                         spawnpoint=eval(line)
                     elif mode=='win':
@@ -124,7 +132,9 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
                     pass
     except:
         pass
-    return boxes,killboxes,water,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3])
+    print(jump_zones)
+    print(killboxes)
+    return boxes,killboxes,jump_zones,water,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3])
 #this works, I tested it
 
 def getFile(level : int) -> str:
@@ -144,6 +154,8 @@ def getFile(level : int) -> str:
             File = "levels/level6"
         case 7:
             File = "levels/level7"
+        case 8:
+            File = "levels/level8"
         case _:
             File = ""
     return File
@@ -299,201 +311,7 @@ pink_orbs = []
 
 
 level = int(1)
-level0 = []
-level1 = [pygame.Rect(96, 498, 577, 107),
-pygame.Rect(770, 494, 356, 118),
-pygame.Rect(1327, 492, 373, 125),
-pygame.Rect(1199, -39, 54, 540),]
 
-level2 = [pygame.Rect(81, 529, 492, 65),
-pygame.Rect(1136, 531, 345, 109),
-pygame.Rect(2053, 506, 161, 89),
-pygame.Rect(2381, -77, 38, 949),
-pygame.Rect(2590, 516, 284, 72),
-pygame.Rect(2961, 121, 54, 903),
-pygame.Rect(3314, 116, 42, 906),
-pygame.Rect(3619, 118, 48, 949),
-pygame.Rect(4023, -15, 47, 672),
-pygame.Rect(3873, 635, 365, 52),
-pygame.Rect(4427, 191, 70, 813),
-pygame.Rect(4464, 940, 120, 51),
-pygame.Rect(4639, -132, 64, 991),
-pygame.Rect(4656, 748, 553, 108),
-pygame.Rect(5332, 248, 60, 761),
-pygame.Rect(4786, 509, 564, 85),
-pygame.Rect(4680, 256, 581, 83),
-pygame.Rect(4778, 85, 427, 78),
-pygame.Rect(5182, 87, 216, 76),
-pygame.Rect(5331, 136, 62, 116),
-pygame.Rect(5629, -18, 34, 1111),]
-level3 = [
-pygame.Rect(67, 457, 331, 86),
-pygame.Rect(463, -50, 214, 588),
-pygame.Rect(468, 536, 33, 395),
-pygame.Rect(427, 965, 83, 27),
-pygame.Rect(601, 972, 81, 24),
-pygame.Rect(505, 904, 94, 11),
-pygame.Rect(547, 899, 18, 50),
-pygame.Rect(647, 574, 33, 401),
-pygame.Rect(591, 669, 58, 28),
-pygame.Rect(498, 670, 59, 28),
-pygame.Rect(978, 971, 29, 33),
-pygame.Rect(671, 510, 581, 27),
-pygame.Rect(734, 538, 151, 420),
-pygame.Rect(779, 992, 72, 21),
-pygame.Rect(877, 894, 395, 34),
-pygame.Rect(913, 930, 10, 26),
-pygame.Rect(956, 964, 9, 41),
-pygame.Rect(1268, 896, 524, 15),
-pygame.Rect(666, 585, 14, 388),
-pygame.Rect(666, 607, 15, 366),
-pygame.Rect(673, 579, 8, 391),
-pygame.Rect(667, 575, 20, 399),
-]
-level4 = [pygame.Rect(476, 114, 40, 325),
-pygame.Rect(714, 122, 33, 320),
-pygame.Rect(290, 663, 91, 385),
-pygame.Rect(1915, 834, 17, 45),
-pygame.Rect(516, 725, 25, 48),]
-
-level4_kill = [pygame.Rect(-15, 529, 1714, 39),
-pygame.Rect(490, 108, 13, 11),
-pygame.Rect(723, 119, 16, 9),
-pygame.Rect(1925, -13, 64, 1105),
-pygame.Rect(470, 564, 54, 342),]
-
-level5 = [pygame.Rect(2, 968, 87, 32),
-pygame.Rect(-5, 906, 13, 103),
-pygame.Rect(5, 901, 205, 12),
-pygame.Rect(155, 942, 43, 66),
-pygame.Rect(33, 775, 179, 73),
-pygame.Rect(2, 649, 27, 22),
-pygame.Rect(-5, 650, 18, 20),
-pygame.Rect(139, 272, 90, 31),
-pygame.Rect(372, 414, 168, 46),
-pygame.Rect(373, 456, 74, 490),
-pygame.Rect(450, 993, 60, 10),
-pygame.Rect(2287, 978, 59, 23),
-pygame.Rect(2379, 506, 133, 498),
-pygame.Rect(2121, 575, 256, 38),
-pygame.Rect(2121, 437, 181, 66),
-pygame.Rect(2208, 679, 87, 15),
-pygame.Rect(2381, -6, 130, 512),
-pygame.Rect(1995, -2, 61, 335),
-pygame.Rect(1854, 665, 149, 23),
-pygame.Rect(1888, 287, 61, 25),
-pygame.Rect(1671, 85, 49, 605),
-pygame.Rect(1485, 640, 187, 44),
-pygame.Rect(1210, 248, 131, 49),
-pygame.Rect(908, -6, 60, 489)]
-
-level5_kill = [pygame.Rect(115, 946, 39, 55),
-pygame.Rect(88, 971, 43, 32),
-pygame.Rect(294, 835, 45, 173),
-pygame.Rect(294, 775, 44, 61),
-pygame.Rect(211, 775, 90, 17),
-pygame.Rect(34, 650, 17, 70),
-pygame.Rect(296, 213, 42, 562),
-pygame.Rect(37, 211, 44, 439),
-pygame.Rect(155, 550, 140, 40),
-pygame.Rect(76, 311, 121, 28),
-pygame.Rect(296, 105, 43, 106),
-pygame.Rect(26, 629, 10, 36),
-pygame.Rect(-22, 214, 59, 434),
-pygame.Rect(296, 207, 43, 16),
-pygame.Rect(323, 106, 107, 110),
-pygame.Rect(538, 0, 49, 463),
-pygame.Rect(448, 649, 1035, 61),
-pygame.Rect(1483, 683, 857, 82),
-pygame.Rect(1998, 429, 43, 265),
-pygame.Rect(2001, 417, 137, 33),
-pygame.Rect(1859, 303, 76, 305),
-pygame.Rect(1931, 305, 67, 21),
-pygame.Rect(1776, 398, 88, 78),
-pygame.Rect(1711, 85, 56, 52),
-pygame.Rect(1061, 176, 152, 472),
-pygame.Rect(1431, -9, 55, 403),
-pygame.Rect(1605, 237, 63, 30),
-pygame.Rect(1486, 375, 94, 27),
-pygame.Rect(1665, 236, 12, 169),
-pygame.Rect(1434, 391, 35, 113),
-pygame.Rect(1357, 459, 80, 39),
-pygame.Rect(1581, 375, 11, 27),
-pygame.Rect(672, 301, 132, 364),
-pygame.Rect(675, 212, 128, 90)]
-# win zone isnt working and i cant fix it so just gonna do this
-lv5win_zone = (445, 459, 69, 194)
-lv6win_zone = (1397, 84, 17, 63)
-lv7win_zone = (5685, 481, 153, 105)
-
-level6 = [pygame.Rect(1, 989, 33, 8),
-pygame.Rect(39, 651, 104, 33),
-pygame.Rect(286, 626, 5, 100),
-pygame.Rect(292, 737, 17, 10),
-pygame.Rect(285, 726, 4, 23),
-pygame.Rect(286, 813, 6, 60),
-pygame.Rect(286, 872, 6, 125),
-pygame.Rect(291, 988, 10, 5),
-pygame.Rect(285, 795, 5, 20),
-pygame.Rect(288, 798, 4, 16),
-pygame.Rect(286, 790, 6, 10),
-pygame.Rect(419, 988, 55, 7),
-pygame.Rect(1508, 996, 108, 7),
-pygame.Rect(1487, 700, 15, 6),
-pygame.Rect(1441, 917, 19, 3),
-pygame.Rect(439, 736, 34, 14),
-pygame.Rect(493, 134, 58, 12)
-]
-
-level6_kill = [pygame.Rect(55, 754, 36, 239),
-pygame.Rect(90, 827, 53, 165),
-pygame.Rect(140, 945, 57, 47),
-pygame.Rect(192, 983, 62, 7),
-pygame.Rect(142, 659, 71, 10),
-pygame.Rect(214, 442, 13, 280),
-pygame.Rect(278, 312, 7, 676),
-pygame.Rect(250, 982, 32, 10),
-pygame.Rect(165, 312, 13, 236),
-pygame.Rect(174, 311, 106, 15),
-pygame.Rect(39, 467, 126, 80),
-pygame.Rect(-1, 203, 113, 145),
-pygame.Rect(416, 200, 14, 611),
-pygame.Rect(283, 611, 74, 12),
-pygame.Rect(417, 16, 12, 187),
-pygame.Rect(-6, -16, 118, 224),
-pygame.Rect(166, 239, 119, 75),
-pygame.Rect(284, 237, 42, 10),
-pygame.Rect(111, -3, 318, 140),
-pygame.Rect(-5, 674, 44, 5),
-pygame.Rect(353, 427, 64, 10),
-pygame.Rect(348, 707, 69, 5),
-pygame.Rect(367, 711, 52, 101),
-pygame.Rect(367, 812, 63, 121),
-pygame.Rect(368, 930, 11, 23),
-pygame.Rect(320, 853, 48, 20),
-pygame.Rect(280, 753, 36, 22),
-pygame.Rect(410, 804, 20, 18),
-pygame.Rect(369, 977, 8, 24),
-pygame.Rect(374, 942, 1151, 6),
-pygame.Rect(376, 930, 1147, 14),
-pygame.Rect(1516, 604, 13, 342),
-pygame.Rect(1516, 539, 11, 68),
-pygame.Rect(1469, 374, 8, 320),
-pygame.Rect(1469, 263, 7, 111),
-pygame.Rect(1470, 228, 4, 35),
-pygame.Rect(1420, 203, 7, 620),
-pygame.Rect(1420, -21, 7, 227),
-pygame.Rect(1425, -11, 145, 165),
-pygame.Rect(1516, 150, 10, 316),
-pygame.Rect(1570, -10, 7, 1008),
-pygame.Rect(486, 431, 13, 503),
-pygame.Rect(489, 158, 10, 174),
-pygame.Rect(489, 151, 935, 9),
-pygame.Rect(398, -40, 282, 80),
-pygame.Rect(422, 764, 68, 170),
-pygame.Rect(420, 31, 1008, 48),
-pygame.Rect(653, -64, 818, 117)
-]
 #misc
 camx = 0
 camy = 0
@@ -569,8 +387,8 @@ while running:
 
     #level switching
     if change_level:
-        if level >= 1 and level <= 7:
-            platforms,killboxes,water,respawn_point,win_zone = fileRead(getFile(level))
+        if level >= 1 and level <= 8:
+            platforms,killboxes,jump_zones,water,respawn_point,win_zone = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
         elif level > 7:
@@ -602,9 +420,13 @@ while running:
 
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
-        player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
-        bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx-camx,playery-camy), mouse_pos)])
-        bullets -= 1
+        if mouse_pos != (playerx-camx,playery-camy):
+            player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
+            bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx-camx,playery-camy), mouse_pos)])
+            bullets -= 1
+        else:
+            print("dumbass")
+            kys = True
 
     # moves bullets according to their velocity, and removes them if they go offscreen
     for bullet in bullet_list:
@@ -686,18 +508,13 @@ while running:
     # cant figure out why winzone doesent spawn so just gonna do this
     for zone in water:
         pygame.draw.rect(world_surf, (0, 0, 170), zone)
-    if level == 5:
-        pygame.draw.rect(world_surf, "green", lv5win_zone)
-    if level == 6:
-        pygame.draw.rect(world_surf, "green", lv6win_zone)
-    if level == 7:
-        pygame.draw.rect(world_surf, "green", lv7win_zone)
+    for zones in jump_zones:
+        pygame.draw.rect(world_surf, (90, 250, 180), zones)
     for boxes in killboxes:
         pygame.draw.rect(world_surf, (100,20,20), boxes)
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
-    for zones in jump_zones:
-        pygame.draw.rect(world_surf, (90, 250, 180), zones)
+
     for orbs in pink_orbs:
         pygame.draw.circle(world_surf, (160, 20, 50), orbs, 30)
     for objects in custom_rects:
@@ -807,7 +624,9 @@ while running:
                 reset_customs()
 
         if keys[pygame.K_6] and keys[pygame.K_7]:
-            fileWrite(getFile(level),platforms,killboxes,water,(int(respawn_point[0]), int(respawn_point[1]),win_rect))
+            fileWrite(getFile(level),platforms,killboxes,jump_zones, water,(int(respawn_point[0]), int(respawn_point[1])),win_zone)
+            saved = True
+            print("saved levels")
             
         bullets = 6000
         if keys[pygame.K_w]:
@@ -835,12 +654,6 @@ while running:
 
     #checks for win
     win = pygame.Rect(player_rect).colliderect(win_zone)
-    if level == 5:
-        win = pygame.Rect(player_rect).colliderect(lv5win_zone)
-    if level == 6:
-        win = pygame.Rect(player_rect).colliderect(lv6win_zone)
-    if level == 7:
-        win = pygame.Rect(player_rect).colliderect(lv7win_zone)
     if win:
         won()
 
@@ -849,7 +662,15 @@ while running:
     screen.blit(world_surf, (-camx, -camy))
     #draws bullet count on screen
     write(f"Bullets: {bullets}/{magazine_size}",(0,0),20,(255,255,255))
-
+    try:
+        if saved:
+            write("saved level", (WIDTH-220,0), 50, "green")
+            saved = False
+        if kys:
+            #happens when someone shoots directly the middle of the screen.
+            pass
+    except:
+        pass
     if dying:
         screen.blit(death_image, (0, 0, death_image.get_width(), death_image.get_height()))
         death_sound.play()
@@ -859,7 +680,7 @@ while running:
         dying = False
         reset()
 
-    rando = random.randint(0,10000)
+    rando = random.randint(0,100000)
     if rando == 1:
         death_sound.play()
     #you know what ts is ok
