@@ -59,3 +59,4 @@ pygame.Rect(672, 301, 132, 364),
 pygame.Rect(675, 212, 128, 90)
 spawn
 (35, 940)
+name
