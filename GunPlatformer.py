@@ -83,15 +83,23 @@ def won():
 def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], jumpZones : list[pygame.Rect], water : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
     with open(File, 'w') as file:
         for i in boxes:
+            if type(i) is tuple:
+                i = pygame.Rect(i[0],i[1],i[3],i[4]
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("kill\n")
         for i in killBoxes:
+            if type(i) is tuple:
+                i = pygame.Rect(i[0],i[1],i[3],i[4]
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("jump\n")
         for i in jumpZones:
+            if type(i) is tuple:
+                i = pygame.Rect(i[0],i[1],i[3],i[4]
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("water\n")
         for i in water:
+            if type(i) is tuple:
+                i = pygame.Rect(i[0],i[1],i[3],i[4]
             file.write(f"pygame.Rect{(i.x,i.y,i.w,i.h)}\n")
         file.write("spawn\n")
         file.write(f"{spawnPoint}\n")
@@ -695,6 +703,7 @@ if printin == True:
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
