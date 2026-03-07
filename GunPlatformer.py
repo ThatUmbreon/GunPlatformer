@@ -10,9 +10,11 @@ from pygame.examples.midi import null_key
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 #author codes:
-#01 = metrog
-#02 = thatumbreon
-#03 = ?
+#00 = ThatUmbreon
+#01 = metr0g
+#02 = PastarDev
+#03 = Autive
+
 
 pygame.init()
 pygame.mixer.init()
@@ -540,7 +542,7 @@ while running:
             new_orb = (mouse_pos[0]+camx, mouse_pos[1]+camy)
             pink_orbs.append(new_orb)
 
-        if keys[pygame.K_KP_PLUS]:
+        if keys[pygame.K_MINUS]:
             enemy_list.append(Enemy([mouse_pos[0]+camx, mouse_pos[1]+camy],EnemyVariant.DEFAULT))
 
         if variable67 != (0,0):
