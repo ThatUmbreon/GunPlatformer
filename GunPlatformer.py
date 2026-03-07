@@ -9,7 +9,10 @@ from pygame.examples.midi import null_key
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-
+#author codes:
+#01 = metrog
+#02 = thatumbreon
+#03 = ?
 
 pygame.init()
 pygame.mixer.init()
