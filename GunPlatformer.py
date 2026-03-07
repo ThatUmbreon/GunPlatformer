@@ -98,7 +98,6 @@ def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rec
         file.write("name\n")
 
 def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pygame.Rect],tuple[int,int],pygame.Rect, list[str]]:
-    global pomni_r34
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
@@ -140,7 +139,7 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
                     elif mode=='name':
                         name=line
                 except:
-                    print('error in reading file contents')
+                    pass #I expect an exception here, as for the last line it will try to remove a character from an empty line
     except:
         print("errror in reading file")
     return boxes,killboxes,jump_zones,water,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3]), name
@@ -688,6 +687,7 @@ if printin == True:
 # close the game when we close it
 
 pygame.quit()
+
 
 
 
