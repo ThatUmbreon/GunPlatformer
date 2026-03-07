@@ -25,7 +25,8 @@ controls:
     F_1 = previous level
     F_2 = next level
     ESCAPE = kill program
-    CREATOR MODE:
+
+CREATOR MODE:
     F_9 = toggle creator mode
     q = select point A at cursor pos
     e = select point B at cursor pos
@@ -34,7 +35,7 @@ controls:
     j = creates bullet refill zones Between points A, and point B
     g = creates killboxes between points A, and point B
     m = moves spawn point to cursor
-    BACKSPACE = deletes platform or win zone at cursor 
+    BACKSPACE = deletes objects at cursor
     CTRL+Z = undo platform creation
     CTRL+SHIFT+Z = redo platform creation
     w = moves player up

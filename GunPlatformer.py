@@ -366,7 +366,6 @@ while running:
             running=False
         if event.type == pygame.MOUSEWHEEL:
             shoot = True
-            print("bazinga")
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
                 running=False
@@ -425,14 +424,15 @@ while running:
             space_hold = False
 
     # shooting, applies recoil and reduces bullets by 1
-    if shoot and bullets > 0:
-        if mouse_pos != (playerx-camx,playery-camy):
-            player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
-            bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx-camx,playery-camy), mouse_pos)])
-            bullets -= 1
-        else:
-            print("dumbass")
-            kys = True
+    if shoot:
+        if bullets > 0:
+            if mouse_pos != (playerx-camx,playery-camy):
+                player_xvel, player_yvel = thatcircleshit(RECOIL, (playerx-camx,playery-camy), mouse_pos, pi)
+                bullet_list.append([[playerx,playery],thatcircleshit(BULLET_SPEED, (playerx-camx,playery-camy), mouse_pos)])
+                bullets -= 1
+            else:
+                print("dumbass")
+                kys = True
         shoot = False
 
     # moves bullets according to their velocity, and removes them if they go offscreen
