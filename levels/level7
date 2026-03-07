@@ -125,7 +125,7 @@ pygame.Rect(4606, 311, 36, 283)
 pygame.Rect(4658, 132, 150, 57)
 pygame.Rect(4748, 187, 57, 690)
 pygame.Rect(4798, 839, 140, 38)
-win
+water
 pygame.Rect(-8, -7, 951, 1022)
 pygame.Rect(937, -8, 3389, 943)
 pygame.Rect(4304, -1, 1272, 469)
