@@ -3,6 +3,7 @@ pygame.Rect(770, 494, 356, 118)
 pygame.Rect(1327, 492, 373, 125)
 pygame.Rect(1199, -39, 54, 540)
 pygame.Rect(1803, -25, 50, 1055)
+pygame.Rect(2632, 470, 50, 135)
 kill
 jump
 water
@@ -11,5 +12,3 @@ spawn
 win
 (1748, -24, 65, 1155)
 name
-tutorial level
-01001)
