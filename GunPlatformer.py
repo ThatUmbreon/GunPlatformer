@@ -92,8 +92,10 @@ def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rec
         file.write(f"{spawnPoint}\n")
         file.write("win\n")
         file.write(f"{(winZone.x,winZone.y,winZone.w,winZone.h)}\n")
+        file.write("name\n")
 
-def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pygame.Rect],tuple[int,int],pygame.Rect]:
+def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pygame.Rect],tuple[int,int],pygame.Rect, list[str]]:
+    global pomni_r34
     mode = 'boxes'
     boxes : list[pygame.Rect] = []
     killboxes : list[pygame.Rect] = []
@@ -101,6 +103,7 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
     water : list[pygame.Rect] = []
     spawnpoint : tuple[int,int] = (0,0)
     winzone : tuple[int,int,int,int] = (0,0,0,0)
+    name : str = "unnamed"
     try:
         with open(File, 'r') as file:
             for line in file:
@@ -116,6 +119,9 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
                         mode = 'win'
                     elif line =="water":
                         mode = 'water'
+                    elif line=="name":
+                        mode = 'name'
+                        print("name mode")
                     elif mode=='boxes':
                         boxes.append(eval(line))
                     elif mode=='kill':
@@ -128,13 +134,13 @@ def fileRead(File : str) -> tuple[list[pygame.Rect],list[pygame.Rect], list[pyga
                         winzone=eval(line)
                     elif mode=='water':
                         water.append(eval(line))
+                    elif mode=='name':
+                        name=line
                 except:
-                    pass
+                    print('error in reading file contents')
     except:
-        pass
-    print(jump_zones)
-    print(killboxes)
-    return boxes,killboxes,jump_zones,water,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3])
+        print("errror in reading file")
+    return boxes,killboxes,jump_zones,water,spawnpoint,pygame.Rect(winzone[0],winzone[1],winzone[2],winzone[3]), name
 #this works, I tested it
 
 def getFile(level : int) -> str:
@@ -319,25 +325,6 @@ death_time = 0
 dying = False
 variable671 = (0,0)
 variable691 = (0,0)
-level7_water = [pygame.Rect(-8, -7, 951, 1022),
-pygame.Rect(937, -8, 3389, 943),
-pygame.Rect(4304, -1, 1272, 469),
-pygame.Rect(4302, 548, 630, 458),
-pygame.Rect(4642, 462, 2194, 406),
-pygame.Rect(5104, 860, 1726, 156),
-pygame.Rect(5563, -9, 1275, 488),
-pygame.Rect(4199, 934, 119, 66)
-]
-
-water_levels = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    level7_water
-]
 
 #file loading
 try:
@@ -388,17 +375,19 @@ while running:
     #level switching
     if change_level:
         if level >= 1 and level <= 8:
-            platforms,killboxes,jump_zones,water,respawn_point,win_zone = fileRead(getFile(level))
+            platforms,killboxes,jump_zones,water,respawn_point,win_zone, name = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
+
         elif level > 7:
-            level = 7
+            level -= 1
             print("no more levels")
         else:
             print("no more levels")
             level = 1
         reset()
         print(level)
+        print(name)
 
     #spawning water
 
@@ -685,12 +674,14 @@ while running:
         death_sound.play()
     #you know what ts is ok
     pygame.display.flip()
-print_at_end("Platforms", platforms)
-print_at_end("Killboxes", killboxes)
-print_at_end("Respawn Point", respawn_point)
-print_at_end("Win Zone", win_zone)
-print_at_end("jump Zone", jump_zones)
-print_at_end("water", water)
+    printin = False
+if printin == True:
+    print_at_end("Platforms", platforms)
+    print_at_end("Killboxes", killboxes)
+    print_at_end("Respawn Point", respawn_point)
+    print_at_end("Win Zone", win_zone)
+    print_at_end("jump Zone", jump_zones)
+    print_at_end("water", water)
 # close the game when we close it
 
 pygame.quit()
