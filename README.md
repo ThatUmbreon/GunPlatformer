@@ -29,8 +29,10 @@ controls:
     F_9 = toggle creator mode
     q = select point A at cursor pos
     e = select point B at cursor pos
-    z = creates platform between point A, and point B
-    l = moves win zone between point A, and point B
+    z = creates platform between point A, and points B
+    l = moves win zone between point A, and points B
+    j = creates bullet refill zones Between points A, and point B
+    g = creates killboxes between points A, and point B
     m = moves spawn point to cursor
     BACKSPACE = deletes platform or win zone at cursor 
     CTRL+Z = undo platform creation
@@ -44,3 +46,9 @@ controls:
 How to play:
     shoot and you will be pushed in the opposite direction of where you shoot
     try to reach the end point, usually to the right
+
+How to add level:
+    add 1 to variable, max_level
+    add another segment to def getfile()
+    press 6+7 simultaneously to save level after adding stuff
+    make sure to name your level and add the ULID (unique level ID)

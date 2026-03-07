@@ -166,6 +166,8 @@ def getFile(level : int) -> str:
             File = "levels/level7"
         case 8:
             File = "levels/level8"
+        case 9:
+            File = "levels/level9"
         case _:
             File = ""
     return File
@@ -318,8 +320,7 @@ win_zone = (WIDTH-100, 0, 100, HEIGHT)
 jump_zones = []
 water = []
 pink_orbs = []
-
-
+max_level = 9
 level = int(1)
 
 #misc
@@ -355,6 +356,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running=False
+        if event.type == pygame.MOUSEWHEEL:
+            shoot = True
+            print("bazinga")
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_ESCAPE:
                 running=False
@@ -378,7 +382,7 @@ while running:
 
     #level switching
     if change_level:
-        if level >= 1 and level <= 8:
+        if level >= 1 and level <= max_level:
             platforms,killboxes,jump_zones,water,respawn_point,win_zone, name = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
@@ -404,12 +408,13 @@ while running:
     camy = playery - HEIGHT / 2
 
     # stops player from shooting constantly unless creaTIVE MODE
-    shoot = (mouse_click[0] and (creator_mode or not hold)) or (keys[pygame.K_SPACE] and not space_hold)
-    hold = mouse_click[0]
-    if keys[pygame.K_SPACE] and not creator_mode:
-        space_hold = True
-    else:
-        space_hold = False
+    if not shoot:
+        shoot = (mouse_click[0] and (creator_mode or not hold)) or (keys[pygame.K_SPACE] and not space_hold)
+        hold = mouse_click[0]
+        if keys[pygame.K_SPACE] and not creator_mode:
+            space_hold = True
+        else:
+            space_hold = False
 
     # shooting, applies recoil and reduces bullets by 1
     if shoot and bullets > 0:
@@ -420,6 +425,7 @@ while running:
         else:
             print("dumbass")
             kys = True
+        shoot = False
 
     # moves bullets according to their velocity, and removes them if they go offscreen
     for bullet in bullet_list:
