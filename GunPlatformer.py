@@ -176,6 +176,8 @@ def getFile(level : int) -> str:
             File = "levels/level8"
         case 9:
             File = "levels/level9"
+        case 10:
+            File = "levels/level10"
         case _:
             File = ""
     return File
@@ -328,7 +330,7 @@ win_zone = (WIDTH-100, 0, 100, HEIGHT)
 jump_zones = []
 water = []
 pink_orbs = []
-max_level = 9
+max_level = 10
 level = int(1)
 
 #misc
@@ -393,13 +395,9 @@ while running:
             platforms,killboxes,jump_zones,water,respawn_point,win_zone, name = fileRead(getFile(level))
             if getFile(level)=="":
                 level -=1
-
-        elif level > 7:
-            level -= 1
-            print("no more levels")
         else:
-            print("no more levels")
-            level = 1
+            print("failed to change level")
+            level -= 1
         reset()
         print(level)
         print(name)
