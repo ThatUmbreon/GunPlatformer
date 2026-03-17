@@ -61,7 +61,7 @@ def calc_rects(point1, point2):
     return new_platform
 
 def reset():
-    global playerx, playery, player_xvel, player_yvel, change_level, bullets, magazine_size
+    global playerx, playery, player_xvel, player_yvel, change_level, bullets, magazine_size, death_counter
     playerx = respawn_point[0]
     playery = respawn_point[1]
     player_xvel = 0
@@ -70,9 +70,13 @@ def reset():
     bullets = magazine_size
 
 def die():
-    global death_time, dying
+    global death_time, dying, death_counter
     dying = True
     death_time = 100
+    death_counter += 1
+    print("Death counter: " + str(death_counter))
+    death_list.append(((playerx, playery), (random.randint(1,255),random.randint(1,255),random.randint(1,255))))
+    reset()
 
 def won():
     global level, change_level, won
@@ -338,6 +342,8 @@ camx = 0
 camy = 0
 death_time = 0
 dying = False
+death_counter = 0
+death_list = []
 variable671 = (0,0)
 variable691 = (0,0)
 
@@ -399,6 +405,8 @@ while running:
             print("failed to change level")
             level -= 1
         reset()
+        death_list = []
+        death_counter = 0
         print(level)
         print(name)
 
@@ -457,6 +465,7 @@ while running:
 
     # collisions
     for i in range(4):
+        #with platforms
         horizontal_blocked = collisions(platforms,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
         vertical_blocked = collisions(platforms,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[1]
 
@@ -465,9 +474,10 @@ while running:
         if refill1 or refill2:
             bullets = magazine_size
 
-
-
-
+        will_die = collisions(killboxes,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
+        will_die = collisions(killboxes,playerx,playery,walk+player_xvel,player_yvel,PLAYER_WIDTH,PLAYER_HEIGHT,GRAVITY)[0]
+        if will_die:
+            die()
 
         #actually moving
         if horizontal_blocked:
@@ -483,12 +493,6 @@ while running:
 
     #death collision
     if not creator_mode:
-        for i in range(4):
-            for boxes in killboxes:
-                if pygame.Rect((playerx+((player_xvel+walk)*dt/4)-PLAYER_WIDTH//2),playery-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(boxes):
-                    die()
-                if pygame.Rect(playerx-PLAYER_WIDTH//2,playery+(player_yvel*dt/4)-PLAYER_HEIGHT//2,PLAYER_WIDTH,PLAYER_HEIGHT).colliderect(boxes):
-                    die()
         if playerx<0:
             playerx = PLAYER_WIDTH//2+1
             player_xvel = 0
@@ -520,6 +524,8 @@ while running:
     for platform in platforms:
         pygame.draw.rect(world_surf, "brown", platform)
 
+    for points in death_list:
+        pygame.draw.circle(world_surf, points[1], points[0], 10)
     for orbs in pink_orbs:
         pygame.draw.circle(world_surf, (160, 20, 50), orbs, 30)
     for objects in custom_rects:
@@ -676,6 +682,7 @@ while running:
             pass
     except:
         pass
+    write(f"Deaths: {death_counter}", (0, 20), 20, (255, 255, 255))
     if dying:
         screen.blit(death_image, (0, 0, death_image.get_width(), death_image.get_height()))
         death_sound.play()
