@@ -3,6 +3,7 @@ import pygame
 from math import cos, sin, acos, asin, pi
 import random
 from enum import Enum
+import time
 import os
 
 from pygame.examples.midi import null_key
@@ -82,6 +83,12 @@ def won():
     global level, change_level, won
     level += 1
     change_level = True
+
+def pad(num,dgts=2,padding='0'):
+    tmp = str(num)
+    while len(tmp.split('.')[0]) < dgts:
+        tmp = padding+tmp
+    return tmp
 
 #I have tested this, this works
 def fileWrite(File : str, boxes : list[pygame.Rect], killBoxes : list[pygame.Rect], jumpZones : list[pygame.Rect], water : list[pygame.Rect], spawnPoint : tuple[int,int], winZone : pygame.Rect) -> None:
@@ -346,15 +353,18 @@ death_counter = 0
 death_list = []
 variable671 = (0,0)
 variable691 = (0,0)
+infty = chr(8734)
 
 #file loading
 try:
     death_image = pygame.image.load('assets/blood-splatter.png').convert_alpha()
     death_sound = pygame.mixer.Sound('assets/hl2-stalker-scream.mp3')
+    timer_image = pygame.image.load('assets/timer.png').convert_alpha()
 except:
     print("failed to load file")
 death_image = pygame.transform.scale(death_image, (WIDTH, HEIGHT))
 
+start_time = time.time()
 # clock for delta time
 clock = pygame.time.Clock()
 # run the game
@@ -672,7 +682,7 @@ while running:
     #puts images onto screen with offset for map
     screen.blit(world_surf, (-camx, -camy))
     #draws bullet count on screen
-    write(f"Bullets: {bullets}/{magazine_size}",(0,0),20,(255,255,255))
+    write(f"Bullets: {infty if creator_mode else bullets}/{magazine_size}",(0,0),20,(255,255,255))
     try:
         if saved:
             write("saved level", (WIDTH-220,0), 50, "green")
@@ -691,6 +701,10 @@ while running:
         pygame.time.wait(death_time)
         dying = False
         reset()
+    t = time.time()
+    timer = f"{int((t-start_time)//3600)}:{pad(int(((t-start_time)//60)%60))}:{pad(round((t-start_time)%60,2))}"
+    screen.blit(timer_image,(0,40))
+    write(f"{timer}",(35,46),20,(255,255,255))
 
     rando = random.randint(0,100000)
     if rando == 1:
