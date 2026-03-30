@@ -360,6 +360,8 @@ try:
     death_image = pygame.image.load('assets/blood-splatter.png').convert_alpha()
     death_sound = pygame.mixer.Sound('assets/hl2-stalker-scream.mp3')
     timer_image = pygame.image.load('assets/timer.png').convert_alpha()
+    death_count_image = pygame.image.load('assets/death.png').convert_alpha()
+    bullet_image = pygame.image.load('assets/bullets.png').convert_alpha()
 except:
     print("failed to load file")
 death_image = pygame.transform.scale(death_image, (WIDTH, HEIGHT))
@@ -682,7 +684,8 @@ while running:
     #puts images onto screen with offset for map
     screen.blit(world_surf, (-camx, -camy))
     #draws bullet count on screen
-    write(f"Bullets: {infty if creator_mode else bullets}/{magazine_size}",(0,0),20,(255,255,255))
+    screen.blit(bullet_image,(0,0))
+    write(f"{infty if creator_mode else bullets}/{magazine_size}",(35,6),20,(255,255,255))
     try:
         if saved:
             write("saved level", (WIDTH-220,0), 50, "green")
@@ -692,7 +695,8 @@ while running:
             pass
     except:
         pass
-    write(f"Deaths: {death_counter}", (0, 20), 20, (255, 255, 255))
+    screen.blit(death_count_image,(0,32))
+    write(f"{death_counter}", (35, 38), 20, (255, 255, 255))
     if dying:
         screen.blit(death_image, (0, 0, death_image.get_width(), death_image.get_height()))
         death_sound.play()
@@ -703,8 +707,8 @@ while running:
         reset()
     t = time.time()
     timer = f"{int((t-start_time)//3600)}:{pad(int(((t-start_time)//60)%60))}:{pad(round((t-start_time)%60,2))}"
-    screen.blit(timer_image,(0,40))
-    write(f"{timer}",(35,46),20,(255,255,255))
+    screen.blit(timer_image,(0,64))
+    write(f"{timer}",(35,70),20,(255,255,255))
 
     rando = random.randint(0,100000)
     if rando == 1:
