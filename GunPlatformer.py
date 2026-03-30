@@ -62,13 +62,14 @@ def calc_rects(point1, point2):
     return new_platform
 
 def reset():
-    global playerx, playery, player_xvel, player_yvel, change_level, bullets, magazine_size, death_counter
+    global playerx, playery, player_xvel, player_yvel, change_level, bullets, magazine_size, death_counter, t, attempt_time
     playerx = respawn_point[0]
     playery = respawn_point[1]
     player_xvel = 0
     player_yvel = 0
     change_level = False
     bullets = magazine_size
+    attempt_time = t
 
 def die():
     global death_time, dying, death_counter
@@ -360,13 +361,18 @@ try:
     death_image = pygame.image.load('assets/blood-splatter.png').convert_alpha()
     death_sound = pygame.mixer.Sound('assets/hl2-stalker-scream.mp3')
     timer_image = pygame.image.load('assets/timer.png').convert_alpha()
+    level_timer_image = pygame.image.load('assets/level_timer.png').convert_alpha()
+    attempt_timer_image = pygame.image.load('assets/attempt_timer.png').convert_alpha()
     death_count_image = pygame.image.load('assets/death.png').convert_alpha()
     bullet_image = pygame.image.load('assets/bullets.png').convert_alpha()
 except:
     print("failed to load file")
 death_image = pygame.transform.scale(death_image, (WIDTH, HEIGHT))
 
-start_time = time.time()
+t = time.time()
+start_time = t
+level_time = t
+attempt_time = t
 # clock for delta time
 clock = pygame.time.Clock()
 # run the game
@@ -375,6 +381,7 @@ running = True
 fpsCap = 60
 # game loop
 while running:
+    t = time.time()
     # delta time :)
     dt = clock.tick(fpsCap)/1000*(fpsCap if fpsCap > 0 else 1)
     #background
@@ -416,6 +423,7 @@ while running:
         else:
             print("failed to change level")
             level -= 1
+        level_time = t
         reset()
         death_list = []
         death_counter = 0
@@ -705,10 +713,15 @@ while running:
         pygame.time.wait(death_time)
         dying = False
         reset()
-    t = time.time()
     timer = f"{int((t-start_time)//3600)}:{pad(int(((t-start_time)//60)%60))}:{pad(round((t-start_time)%60,2))}"
+    level_timer = f"{int((t - level_time) // 3600)}:{pad(int(((t - level_time) // 60) % 60))}:{pad(round((t - level_time) % 60, 2))}"
+    attempt_timer = f"{int((t - attempt_time) // 3600)}:{pad(int(((t - attempt_time) // 60) % 60))}:{pad(round((t - attempt_time) % 60, 2))}"
     screen.blit(timer_image,(0,64))
+    screen.blit(level_timer_image,(0,96))
+    screen.blit(attempt_timer_image,(0,128))
     write(f"{timer}",(35,70),20,(255,255,255))
+    write(f"{level_timer}", (35, 102), 20, (255, 255, 255))
+    write(f"{attempt_timer}", (35, 134), 20, (255, 255, 255))
 
     rando = random.randint(0,100000)
     if rando == 1:
