@@ -429,7 +429,7 @@ death_list = []
 variable671 = (0,0)
 variable691 = (0,0)
 infty = chr(8734)
-online = False # you saw nothing
+online = False
 username = f"Player{random.randint(0,65535)}"
 host = False
 client_socket = None
@@ -498,7 +498,7 @@ while running:
                     prompt = True
                     while prompt:
                         match gui.confirm(title='GunPlatformer',
-                                          text='Multiplayer functionality is unfinished. Come back later.',
+                                          text='Welcome back to the multiplayer hub. What would you like to now?',
                                           buttons=["Disconnect","Change username", "Exit multiplayer hub"]):
                             case "Change username":
                                 act = gui.prompt(title='GunPlatformer',
@@ -514,7 +514,7 @@ while running:
                 else:
                     prompt = True
                     while prompt:
-                        match gui.confirm(title='GunPlatformer',text='Multiplayer functionality is unfinished. Come back later.',buttons=["Host a multiplayer game","Join a multiplayer game","Change username","Exit multiplayer hub"]):
+                        match gui.confirm(title='GunPlatformer',text='Welcome to the multiplayer hub! Multiplayer functionality is unfinished. Come back later.',buttons=["Host a multiplayer game","Join a multiplayer game","Change username","Exit multiplayer hub"]):
                             case "Change username":
                                 act = gui.prompt(title='GunPlatformer',text='What would you like your new username to be?',default=username)
                                 username = act if act else username
