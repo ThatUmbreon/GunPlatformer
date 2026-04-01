@@ -1,4 +1,6 @@
 # external libraries
+import pyautogui as gui
+import socket
 import pygame
 from math import cos, sin, acos, asin, pi
 import random
@@ -45,12 +47,46 @@ def thatcircleshit(radius, center, point, addangle=0):
         playery = radius * sin(addangle + asin((point[1] - center[1]) / (distance(center, point))))
     return playerx, playery
 
-def write(msg, pos, size, color):
-    '''draw text on the screen, aligned topleft'''
+class Centering(Enum):
+    TL=0
+    T=1
+    TR=2
+    L=3
+    C=4
+    R=5
+    BL=6
+    B=7
+    BR=8
+
+def center(rect,pos,alignment):
+    tRect = rect.copy()
+    match alignment:
+        case Centering.TL:
+            tRect.topleft = pos
+        case Centering.T:
+            tRect.midtop = pos
+        case Centering.TR:
+            tRect.topright = pos
+        case Centering.L:
+            tRect.midleft = pos
+        case Centering.C:
+            tRect.center = pos
+        case Centering.R:
+            tRect.midright = pos
+        case Centering.BL:
+            tRect.bottomleft = pos
+        case Centering.B:
+            tRect.midbottom = pos
+        case Centering.BR:
+            tRect.bottomright = pos
+    return tRect
+
+def write(msg, pos, size, color, alignment=Centering.TL):
+    '''draw text on the screen, aligned topleft by default'''
     sFont = pygame.font.SysFont("Arial", size)
     sSurf = sFont.render(msg, True, color)
     sRect = sSurf.get_rect()
-    sRect.topleft = pos
+    sRect = center(sRect,pos,alignment)
     screen.blit(sSurf, sRect)
 
 def calc_rects(point1, point2):
@@ -280,6 +316,44 @@ class Enemy:
             else:
                 self.pos[1] += self.y_vel*dt/4
 
+
+def start_client(host='127.0.0.1', port=51234):  # The client will connect to this IP and port
+    global client_socket
+    try:
+        client_socket = socket.create_connection((host, port))  # Try to connect to the server
+    except ConnectionRefusedError:
+        print("Connection failed. Is the server running?")
+
+def tick_client():
+    global client_socket
+    message = f"{username},{playerx},{playery}"
+    client_socket.sendall(message.encode('utf-8'))
+    data = client_socket.recv(1024)
+    if data:
+        print(f"Received echo: {data.decode('utf-8')}")
+    else:
+        return None
+
+def start_server(host='127.0.0.1', port=51234):# The server will listen on this IP and port
+    global server_socket
+    server_socket = socket.create_server((host, port),backlog=1)
+    print(f"Server started. Listening on {host}:{port}")
+
+def tick_server():
+    global client_socket, server_socket, client_data
+    data = client_socket.recv(1024)
+    if data:
+        client_data = data.decode('utf-8').split(',')
+        client_socket.sendall(data)  # Echo the data back to the client
+    else:
+        return None
+
+
+def connect_client():
+    global client_socket, server_socket
+    client_socket, client_address = server_socket.accept()
+    print(f"Connected by {client_address}")
+
 # screen
 WIDTH = 1200
 HEIGHT = 800
@@ -355,6 +429,12 @@ death_list = []
 variable671 = (0,0)
 variable691 = (0,0)
 infty = chr(8734)
+online = False # you saw nothing
+username = f"Player{random.randint(0,65535)}"
+host = False
+client_socket = None
+server_socket = None
+client_data = None
 
 #file loading
 try:
@@ -365,6 +445,7 @@ try:
     attempt_timer_image = pygame.image.load('assets/attempt_timer.png').convert_alpha()
     death_count_image = pygame.image.load('assets/death.png').convert_alpha()
     bullet_image = pygame.image.load('assets/bullets.png').convert_alpha()
+    death_sound.set_volume(0.05) # fuck you gilbert and your stupid jumpscare
 except:
     print("failed to load file")
 death_image = pygame.transform.scale(death_image, (WIDTH, HEIGHT))
@@ -412,7 +493,43 @@ while running:
             elif event.key == pygame.K_F2:
                 level += 1
                 change_level = True
-
+            elif event.key == pygame.K_p:
+                if online:
+                    prompt = True
+                    while prompt:
+                        match gui.confirm(title='GunPlatformer',
+                                          text='Multiplayer functionality is unfinished. Come back later.',
+                                          buttons=["Disconnect","Change username", "Exit multiplayer hub"]):
+                            case "Change username":
+                                act = gui.prompt(title='GunPlatformer',
+                                                 text='What would you like your new username to be?', default=username)
+                                username = act if act else username
+                            case "Disconnect":
+                                client_socket.close()
+                                online = False
+                                host = False
+                                prompt = False
+                            case _:
+                                prompt = False
+                else:
+                    prompt = True
+                    while prompt:
+                        match gui.confirm(title='GunPlatformer',text='Multiplayer functionality is unfinished. Come back later.',buttons=["Host a multiplayer game","Join a multiplayer game","Change username","Exit multiplayer hub"]):
+                            case "Change username":
+                                act = gui.prompt(title='GunPlatformer',text='What would you like your new username to be?',default=username)
+                                username = act if act else username
+                            case "Host a multiplayer game":
+                                online = True
+                                host = True
+                                start_server()
+                                prompt = False
+                            case "Join a multiplayer game":
+                                online = True
+                                start_client()
+                                prompt = False
+                            case _:
+                                online = False
+                                prompt = False
 
     #level switching
     if change_level:
@@ -669,7 +786,14 @@ while running:
         if keys[pygame.K_d]:
             playerx += 20
 
-
+    if online:
+        creator_mode = False
+        if host:
+            if not client_socket:
+                connect_client()
+            tick_server()
+        else:
+            tick_client()
 
     #draws bullets
     for bullet in bullet_list:
@@ -688,6 +812,9 @@ while running:
     if win:
         won()
 
+    if online and host and client_data:
+        pygame.draw.rect(world_surf, (67, 255, 255),
+                         (float(client_data[1]) - PLAYER_WIDTH // 2, float(client_data[2]) - PLAYER_HEIGHT // 2, PLAYER_WIDTH, PLAYER_HEIGHT))
 
     #puts images onto screen with offset for map
     screen.blit(world_surf, (-camx, -camy))
@@ -722,6 +849,10 @@ while running:
     write(f"{timer}",(35,70),20,(255,255,255))
     write(f"{level_timer}", (35, 102), 20, (255, 255, 255))
     write(f"{attempt_timer}", (35, 134), 20, (255, 255, 255))
+    if online:
+        if host and client_data:
+            write(f"{client_data[0]}", (float(client_data[1])-camx, float(client_data[2]) - PLAYER_HEIGHT-camy), 20, (255, 255, 255), Centering.B)
+        write(f"{username}", (WIDTH//2,HEIGHT//2-PLAYER_HEIGHT), 20, (255, 255, 255),Centering.B)
 
     rando = random.randint(0,100000)
     if rando == 1:
